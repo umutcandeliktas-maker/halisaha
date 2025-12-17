@@ -95,12 +95,11 @@ function renderPlayers() {
 
 // Tek tek oyuncu ekle
 function addSinglePlayer() {
-  const name = document.getElementById('singlePlayerName').value.trim();
+  let name = document.getElementById('singlePlayerName').value.trim();
   
-  // Eğer isim boşsa, uyarı ver
+  // Eğer isim boşsa, otomatik bir isim ver
   if (name === "") {
-    alert("Lütfen oyuncu ismini girin.");
-    return;
+    name = `Oyuncu ${players.length + 1}`;  // Örneğin "Oyuncu 1", "Oyuncu 2" şeklinde
   }
   
   // Aynı isimli oyuncu eklenmesin
