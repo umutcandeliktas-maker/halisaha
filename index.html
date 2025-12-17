@@ -26,27 +26,17 @@
 
 <div class="container">
 
-<h3>Oyuncu Eklemek İçin Ne Yapmak İstersin?</h3>
-<p>İster tek tek oyuncuları ekleyebilirsin, ister bir seferde çoklu oyuncuları ekleyebilirsin. Seçimini yap ve başla!</p>
-
-<!-- Oyuncu ekleme türünü seçmek için butonlar -->
-<button onclick="showSinglePlayerInput()">➕ Tek Tek Oyuncu Ekle</button>
-<button onclick="showBulkPlayerInput()">➕ Çoklu Oyuncu Ekle</button>
+<h3>Oyuncu Eklemek İçin İhtiyacınız Olan Tek Şey: İsimler!</h3>
+<p>Oyuncu isimlerini tek tek girin ve hemen takımlarınızı oluşturun. Her oyuncu için ismi girin, "Oyuncu Ekle" butonuna tıklayın.</p>
 
 <hr>
 
-<div id="singlePlayerSection" style="display:none;">
+<!-- Tek Tek Oyuncu Ekleme -->
+<div id="singlePlayerSection">
   <h4>Tek Tek Oyuncu Ekle</h4>
   <input type="text" id="singlePlayerName" placeholder="Oyuncu İsmini Girin">
   <button onclick="addSinglePlayer()">Oyuncu Ekle</button>
   <p>Her oyuncu için ismini gir ve "Oyuncu Ekle" butonuna tıkla.</p>
-</div>
-
-<div id="bulkPlayerSection" style="display:none;">
-  <h4>Çoklu Oyuncu Ekle</h4>
-  <input type="text" id="bulkNames" placeholder="İsimleri virgülle ayırarak girin (Örneğin: Ali, Veli, Ahmet)">
-  <button onclick="addBulkPlayers()">Oyuncuları Ekle</button>
-  <p>Birden fazla oyuncuyu aynı anda eklemek için isimleri virgülle ayırarak yaz ve "Oyuncuları Ekle" butonuna tıkla.</p>
 </div>
 
 <hr>
@@ -102,16 +92,6 @@ function renderPlayers() {
   });
 }
 
-function showSinglePlayerInput() {
-  document.getElementById('singlePlayerSection').style.display = 'block';
-  document.getElementById('bulkPlayerSection').style.display = 'none';
-}
-
-function showBulkPlayerInput() {
-  document.getElementById('bulkPlayerSection').style.display = 'block';
-  document.getElementById('singlePlayerSection').style.display = 'none';
-}
-
 function addSinglePlayer() {
   const name = document.getElementById('singlePlayerName').value;
   if (name) {
@@ -121,21 +101,6 @@ function addSinglePlayer() {
     document.getElementById('singlePlayerName').value = ''; // input alanını temizle
   } else {
     alert("Lütfen oyuncu ismini girin.");
-  }
-}
-
-function addBulkPlayers() {
-  const bulkNames = document.getElementById('bulkNames').value;
-  if (bulkNames) {
-    const names = bulkNames.split(',').map(name => name.trim()); // Virgülle ayırarak isimleri al
-    names.forEach(name => {
-      players.push({ name, pos: [], power: 3 });
-    });
-    save();
-    renderPlayers();
-    document.getElementById('bulkNames').value = ''; // input alanını temizle
-  } else {
-    alert("Lütfen oyuncu isimlerini girin.");
   }
 }
 
