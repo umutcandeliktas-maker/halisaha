@@ -5,29 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Halısaha Takım Kurucu</title>
   <style>
-    /* Basit stil ayarları */
-    body { font-family: Arial; background: #0f5132; color: #fff; margin: 0; padding: 10px; }
-    .container { max-width: 900px; margin: auto; padding: 20px; }
-    button { padding: 10px 14px; margin: 4px; border: none; border-radius: 6px; background: #ffc107; font-weight: bold; cursor: pointer; }
-    input { padding: 6px; border-radius: 4px; border: none; margin: 2px; }
-    .player { background: #198754; padding: 8px; border-radius: 6px; margin-bottom: 6px; }
+    body { margin:0; font-family:Arial; background:#0f5132; color:#fff; }
+    header { background:#1e7f43; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
+    .container { max-width:900px; margin:auto; padding:10px; }
+    button { padding:10px 14px; margin:4px; border:none; border-radius:6px; background:#ffc107; font-weight:bold; cursor:pointer; }
+    button.danger { background:#dc3545; color:#fff; }
+    input, select { padding:6px; border-radius:4px; border:none; margin:2px; }
+    .player { background:#198754; padding:8px; border-radius:6px; margin-bottom:6px; }
+    .field { background:#198754; border-radius:10px; padding:10px; margin:15px 0; }
+    .line { display:flex; justify-content:center; gap:8px; margin:10px 0; }
+    .card { background:#fff; color:#000; padding:6px 8px; border-radius:6px; min-width:70px; text-align:center; font-size:13px; }
+    .name { font-weight:bold; }
+    .pos { font-size:12px; }
+    @media(max-width:600px){ .card{min-width:60px;font-size:12px;} }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h3>Oyuncular (<span id="count">0</span>)</h3>
-  <!-- Çoklu isim girişi için input ve buton -->
-  <input type="text" id="bulkNames" placeholder="İsimleri virgülle ayırarak girin">
-  <button onclick="addBulkPlayers()">Oyuncuları Ekle</button>
+<header>⚽ Halısaha Takım Kurucu</header>
 
-  <hr>
-  <div id="players"></div>
+<div class="container">
+
+<h3>Oyuncular (<span id="count">0</span>)</h3>
+
+<!-- Tek tek oyuncu eklemek için alan -->
+<input type="text" id="singlePlayerName" placeholder="Oyuncu İsmi Girin">
+<button onclick="addSinglePlayer()">➕ Tek Oyuncu Ekle</button>
+
+<br><br>
+
+<!-- Çoklu oyuncu eklemek için alan -->
+<input type="text" id="bulkNames" placeholder="İsimleri virgülle ayırarak girin">
+<button onclick="addBulkPlayers()">➕ Çoklu Oyuncu Ekle</button>
+
+<hr>
+
+<div id="players"></div>
+
+<hr>
+
+<label><input type="radio" name="mode" value="one" checked> Tek takım</label>
+<label style="margin-left:10px;"><input type="radio" name="mode" value="two"> İki takım</label>
+
+<br><br>
+<button onclick="createTeams()">🏟️ Takım Oluştur</button>
+<button onclick="toggleVest()">🦺 Yelek Değiştir</button>
+<button onclick="shareImage()">📸 Resim Paylaş</button>
+
+<div style="margin:10px 0;">
+  <label>Takım A Forma Rengi: <input type="color" id="colorA" value="#ffc107"></label>
+  <label style="margin-left:10px;">Takım B Forma Rengi: <input type="color" id="colorB" value="#0dcaf0"></label>
+</div>
+
+<div id="teams"></div>
+
 </div>
 
 <script>
-// Verileri kaydetmek için localStorage kullanıyoruz
 let players = JSON.parse(localStorage.getItem('players')) || [];
+let vestTeam = 1;
 
 function save() {
   localStorage.setItem('players', JSON.stringify(players));
@@ -41,30 +77,98 @@ function renderPlayers() {
   players.forEach((p, i) => {
     div.innerHTML += `
       <div class="player">
-        <div>${p.name}</div>
-        <div>Pos: ${p.pos.join(', ')}</div>
+        <input placeholder="İsim" value="${p.name}" onchange="players[${i}].name=this.value;save()">
+        <label><input type="checkbox" ${p.pos.includes('GK') ? 'checked' : ''} onchange="toggle(${i},'GK')">GK</label>
+        <label><input type="checkbox" ${p.pos.includes('DEF') ? 'checked' : ''} onchange="toggle(${i},'DEF')">DEF</label>
+        <label><input type="checkbox" ${p.pos.includes('MID') ? 'checked' : ''} onchange="toggle(${i},'MID')">MID</label>
+        <label><input type="checkbox" ${p.pos.includes('FWD') ? 'checked' : ''} onchange="toggle(${i},'FWD')">FWD</label>
+        <select onchange="players[${i}].power=this.value;save()">
+          ${[1, 2, 3, 4, 5].map(n => `<option ${p.power == n ? 'selected' : ''}>${n}</option>`).join('')}
+        </select>
       </div>
     `;
   });
 }
 
-// Çoklu isim ekleme fonksiyonu
+function addSinglePlayer() {
+  const name = document.getElementById('singlePlayerName').value;
+  if (name) {
+    players.push({ name, pos: [], power: 3 });
+    save();
+    renderPlayers();
+    document.getElementById('singlePlayerName').value = ''; // input alanını temizle
+  }
+}
+
 function addBulkPlayers() {
   const bulkNames = document.getElementById('bulkNames').value;
   const names = bulkNames.split(',').map(name => name.trim()); // Virgülle ayırarak isimleri al
-
   names.forEach(name => {
-    // Her bir ismi oyuncu olarak ekle
     players.push({ name, pos: [], power: 3 });
   });
-
-  save(); // Verileri kaydet
-  renderPlayers(); // Oyuncu listesine güncel veriyi yansıt
+  save();
+  renderPlayers();
+  document.getElementById('bulkNames').value = ''; // input alanını temizle
 }
 
-// Sayfa yüklendiğinde oyuncuları göster
+function toggle(i, pos) {
+  const p = players[i].pos;
+  players[i].pos = p.includes(pos) ? p.filter(x => x !== pos) : [...p, pos];
+  save();
+}
+
+function shuffle(a) {
+  return a.sort(() => Math.random() - 0.5);
+}
+
+function createTeams() {
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const list = [...players].sort((a, b) => b.power - a.power);
+
+  if (mode === 'one') {
+    document.getElementById('teams').innerHTML = teamHTML('Bizim Takım', list, false, document.getElementById('colorA').value);
+    return;
+  }
+
+  let t1 = [], t2 = [], p1 = 0, p2 = 0;
+  list.forEach(p => {
+    if (p1 <= p2) { t1.push(p); p1 += Number(p.power); }
+    else { t2.push(p); p2 += Number(p.power); }
+  });
+
+  document.getElementById('teams').innerHTML =
+    teamHTML('Takım A', t1, vestTeam === 1, document.getElementById('colorA').value) +
+    teamHTML('Takım B', t2, vestTeam === 2, document.getElementById('colorB').value);
+}
+
+function teamHTML(title, team, vest, color) {
+  const lines = { GK: [], DEF: [], MID: [], FWD: [] };
+  team.forEach(p => {
+    const pos = p.pos.includes('GK') ? 'GK' : p.pos.includes('DEF') ? 'DEF' : p.pos.includes('MID') ? 'MID' : 'FWD';
+    lines[pos].push(p);
+  });
+
+  let html = `<h3>${vest ? '🦺 ' : ''}${title}</h3><div class="field" style="border:3px solid ${color}">`;
+  ['GK', 'DEF', 'MID', 'FWD'].forEach(l => {
+    if (lines[l].length) {
+      html += '<div class="line">';
+      lines[l].forEach(p => {
+        html += `<div class="card" style="border:2px solid ${color}"><div class="name">${p.name}</div><div class="pos">${l}</div></div>`;
+      });
+      html += '</div>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleVest() { vestTeam = vestTeam === 1 ? 2 : 1; createTeams(); }
+
+function shareImage() {
+  alert('Ekran görüntüsü alarak paylaşabilirsiniz 🙂');
+}
+
 renderPlayers();
 </script>
-
 </body>
 </html>
