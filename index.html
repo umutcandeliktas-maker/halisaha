@@ -87,6 +87,7 @@ function renderPlayers() {
         <select onchange="players[${i}].power=this.value;save()">
           ${[1, 2, 3, 4, 5].map(n => `<option ${p.power == n ? 'selected' : ''}>${n}</option>`).join('')}
         </select>
+        <button onclick="removePlayer(${i})">❌ Sil</button>
       </div>
     `;
   });
@@ -102,6 +103,12 @@ function addSinglePlayer() {
   } else {
     alert("Lütfen oyuncu ismini girin.");
   }
+}
+
+function removePlayer(i) {
+  players.splice(i, 1);
+  save();
+  renderPlayers();
 }
 
 function toggle(i, pos) {
