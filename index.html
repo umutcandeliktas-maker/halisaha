@@ -95,14 +95,21 @@ function renderPlayers() {
 
 function addSinglePlayer() {
   const name = document.getElementById('singlePlayerName').value;
-  if (name) {
-    players.push({ name, pos: [], power: 3 });
-    save();
-    renderPlayers();
-    document.getElementById('singlePlayerName').value = ''; // input alanını temizle
-  } else {
+  if (name.trim() === "") {
     alert("Lütfen oyuncu ismini girin.");
+    return;
   }
+
+  // Oyuncu var mı kontrolü
+  if (players.some(player => player.name === name)) {
+    alert("Bu oyuncu zaten eklenmiş!");
+    return;
+  }
+
+  players.push({ name, pos: [], power: 3 });
+  save();
+  renderPlayers();
+  document.getElementById('singlePlayerName').value = ''; // input alanını temizle
 }
 
 function removePlayer(i) {
