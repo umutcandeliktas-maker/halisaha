@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halısaha Takım Kurucu</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e7f43">
+
+<style>
+body{margin:0;font-family:Arial;background:#0f5132;color:#fff}
+header{background:#1e7f43;padding:12px;text-align:center;font-weight:bold}
+.container{padding:10px;max-width:800px;margin:auto}
+button{padding:8px 12px;margin:4px;border:none;border-radius:6px;background:#ffc107;font-weight:bold}
+.player{background:#198754;padding:6px;border-radius:6px;margin-bottom:6px}
+.field{background:#198754;border-radius:10px;padding:10px;margin-top:10px}
+.line{display:flex;justify-content:center;gap:8px;margin:8px 0}
+.card{background:#fff;color:#000;padding:6px;border-radius:6px;text-align:center;min-width:70px}
+</style>
+</head>
+
+<body>
+<header>⚽ Halısaha Takım Kurucu</header>
+
+<div class="container">
+<h3>Oyuncular (<span id="count">0</span>)</h3>
+
+<button onclick="addPlayer()">➕ Oyuncu Ekle</button>
+<button onclick="removePlayer()">➖ Oyuncu Sil</button>
+
+<div id="players"></div>
+
+<hr>
+<button onclick="createTeams()">🏟️ Takım Oluştur</button>
+<div id="teams"></div>
+</div>
+
+<script>
+let players = [];
+
+function renderPlayers(){
+  document.getElementById("count").innerText = players.length;
+  const div = document.getElementById("players");
+  div.innerHTML = "";
+  players.forEach((p,i)=>{
+    div.innerHTML += `
+      <div class="player">
+        <input placeholder="İsim" value="${p.name}" 
+        onchange="players[${i}].name=this.value">
+      </div>`;
+  });
+}
+
+function addPlayer(){
+  players.push({name:""});
+  renderPlayers();
+}
+
+function removePlayer(){
+  players.pop();
+  renderPlayers();
+}
+
+function createTeams(){
+  const mid = Math.floor(players.length/2);
+  const a = players.slice(0,mid);
+  const b = players.slice(mid);
+
+  document.getElementById("teams").innerHTML =
+    teamHTML("Takım A",a) + teamHTML("Takım B",b);
+}
+
+function teamHTML(title,team){
+  let html = `<h3>${title}</h3><div class="field"><div class="line">`;
+  team.forEach(p=>{
+    html += `<div class="card">${p.name}</div>`;
+  });
+  html += "</div></div>";
+  return html;
+}
+
+renderPlayers();
+</script>
+</body>
+</html>
