@@ -64,18 +64,18 @@
 </div>
 
 <script>
+// Eğer veriler varsa yükle, yoksa baştan bir liste oluştur
 let players = JSON.parse(localStorage.getItem('players')) || [];
-let vestTeam = 1;
 
+// Veriyi kaydetmek için
 function save() {
   localStorage.setItem('players', JSON.stringify(players));
 }
 
+// Oyuncuları render et
 function renderPlayers() {
   const div = document.getElementById('players');
   div.innerHTML = ''; // Önceki oyuncuları temizle
-  document.getElementById('count').innerText = players.length;
-
   players.forEach((p, i) => {
     div.innerHTML += `
       <div class="player">
@@ -93,41 +93,46 @@ function renderPlayers() {
   });
 }
 
+// Tek tek oyuncu ekle
 function addSinglePlayer() {
-  const name = document.getElementById('singlePlayerName').value;
-  if (name.trim() === "") {
+  const name = document.getElementById('singlePlayerName').value.trim();
+  
+  // Eğer isim boşsa, uyarı ver
+  if (name === "") {
     alert("Lütfen oyuncu ismini girin.");
     return;
   }
-
-  // Oyuncu var mı kontrolü
+  
+  // Aynı isimli oyuncu eklenmesin
   if (players.some(player => player.name === name)) {
     alert("Bu oyuncu zaten eklenmiş!");
     return;
   }
 
+  // Yeni oyuncu ekle
   players.push({ name, pos: [], power: 3 });
   save();
   renderPlayers();
-  document.getElementById('singlePlayerName').value = ''; // input alanını temizle
+  
+  // Input alanını temizle
+  document.getElementById('singlePlayerName').value = '';
 }
 
+// Oyuncu sil
 function removePlayer(i) {
   players.splice(i, 1);
   save();
   renderPlayers();
 }
 
+// Pozisyon seç
 function toggle(i, pos) {
   const p = players[i].pos;
   players[i].pos = p.includes(pos) ? p.filter(x => x !== pos) : [...p, pos];
   save();
 }
 
-function shuffle(a) {
-  return a.sort(() => Math.random() - 0.5);
-}
-
+// Takım oluştur
 function createTeams() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const list = [...players].sort((a, b) => b.power - a.power);
@@ -148,6 +153,7 @@ function createTeams() {
     teamHTML('Takım B', t2, vestTeam === 2, document.getElementById('colorB').value);
 }
 
+// Takım düzenlemesi
 function teamHTML(title, team, vest, color) {
   const lines = { GK: [], DEF: [], MID: [], FWD: [] };
   team.forEach(p => {
@@ -169,12 +175,7 @@ function teamHTML(title, team, vest, color) {
   return html;
 }
 
-function toggleVest() { vestTeam = vestTeam === 1 ? 2 : 1; createTeams(); }
-
-function shareImage() {
-  alert('Ekran görüntüsü alarak paylaşabilirsiniz 🙂');
-}
-
+// Cache temizle
 function clearCache() {
   localStorage.clear();
   alert('Veriler temizlendi!');
