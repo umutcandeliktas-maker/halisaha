@@ -16,7 +16,7 @@
     .player { background:#198754; padding:8px; border-radius:6px; margin-bottom:6px; }
     .field { background:#198754; border-radius:10px; padding:10px; margin:15px 0; }
     .line { display:flex; justify-content:center; gap:8px; margin:10px 0; }
-    .card { background:#fff; color:#000; padding:6px 8px; border-radius:6px; min-width:70px; text-align:center; font-size:13px; }
+    .card { background:#fff; color:#000; padding:6px 8px; border-radius:6px; min-width:70px; text-align:center; font-size:13px; cursor:pointer; }
     .name { font-weight:bold; }
     .pos { font-size:12px; }
     @media(max-width:600px){ .card{min-width:60px;font-size:12px;} }
@@ -62,9 +62,14 @@ function renderPlayers(){
       <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''} onchange="toggle(${i},'DEF')">DEF</label>
       <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''} onchange="toggle(${i},'MID')">MID</label>
       <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''} onchange="toggle(${i},'FWD')">FWD</label>
-      <label>Kalite: <input type="number" min="1" max="10" value="${p.power}" onchange="players[${i}].power=this.value;save()"></label>
+      <button onclick="selectPower(${i})">Kalite: ${p.power}</button>
     </div>`;
   });
+}
+function selectPower(i){
+  const val = prompt('1-10 arası kalite seç:', players[i].power);
+  const num = parseInt(val);
+  if(num>=1 && num<=10){ players[i].power=num; save(); renderPlayers(); }
 }
 function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 function createTeams(){
@@ -80,7 +85,7 @@ function createTeams(){
 function setTeamCaptain(team,playerName){ teamCaptains[team]=playerName; createTeams(); }
 function teamHTML(title,team,vest,color,teamId){
   let html=`<h3>${vest?'🦺 ':''}${title}`;
-  html+=` <button onclick="setCaptain('${teamId}', prompt('Kaptan ismini gir:'))">Kaptan Seç</button>`;
+  html+=` <button onclick="setTeamCaptain('${teamId}', prompt('Kaptan ismini gir:'))">Kaptan Seç</button>`;
   if(teamCaptains[teamId]) html+=` 🧢 ${teamCaptains[teamId]}`;
   html+=`</h3><div class="field" style="border:3px solid ${color}">`;
   const lines={GK:[],DEF:[],MID:[],FWD:[]}; team.forEach(p=>{ const pos = p.pos.includes('GK')?'GK':p.pos.includes('DEF')?'DEF':p.pos.includes('MID')?'MID':'FWD'; lines[pos].push(p); });
