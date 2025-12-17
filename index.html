@@ -36,6 +36,7 @@
   <button onclick="createTeams()">🏟️ Takım Oluştur</button>
   <button onclick="toggleVest()">🦺 Yelek Değiştir</button>
   <button onclick="shareImage()">📸 Resim Paylaş</button>
+  <button onclick="clearData()">Verileri Temizle</button>
   <div style="margin:10px 0;">
     <label>Takım A Forma Rengi: <input type="color" id="colorA" value="#ffc107"></label>
     <label style="margin-left:10px;">Takım B Forma Rengi: <input type="color" id="colorB" value="#0dcaf0"></label>
@@ -136,6 +137,15 @@
         link.click();
       });
     }
+  }
+
+  function clearData() {
+    // Clear both localStorage and sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Reload the page to reset the app
+    location.reload();
   }
 
   renderPlayers();
