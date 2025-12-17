@@ -42,15 +42,16 @@
 </div>
 <div id="teams"></div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 let players = JSON.parse(localStorage.getItem('players')) || [];
 let vestTeam = 1;
-if(players.length === 0){ players.push({name:'',pos:[],power:3,captain:false}); save(); }
+let teamCaptains = {A:null,B:null};
+if(players.length === 0){ players.push({name:'',pos:[],power:5}); save(); }
 function save(){ localStorage.setItem('players', JSON.stringify(players)); }
-function addPlayer(){ players.push({name:'',pos:[],power:3,captain:false}); save(); renderPlayers(); }
+function addPlayer(){ players.push({name:'',pos:[],power:5}); save(); renderPlayers(); }
 function removePlayer(){ players.pop(); save(); renderPlayers(); }
 function toggle(i,pos){ const p = players[i].pos; players[i].pos = p.includes(pos) ? p.filter(x=>x!==pos) : [...p,pos]; save(); }
-function setCaptain(i){ players.forEach(p=>p.captain=false); players[i].captain=true; save(); renderPlayers(); }
 function renderPlayers(){
   const div = document.getElementById('players'); div.innerHTML='';
   document.getElementById('count').innerText = players.length;
@@ -61,30 +62,33 @@ function renderPlayers(){
       <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''} onchange="toggle(${i},'DEF')">DEF</label>
       <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''} onchange="toggle(${i},'MID')">MID</label>
       <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''} onchange="toggle(${i},'FWD')">FWD</label>
-      <select onchange="players[${i}].power=this.value;save()">${[1,2,3,4,5].map(n=>`<option ${p.power==n?'selected':''}>${n}</option>`).join('')}</select>
-      <label><input type="radio" name="captain" ${p.captain?'checked':''} onchange="setCaptain(${i})"> Kaptan</label>
+      <label>Kalite: <input type="number" min="1" max="10" value="${p.power}" onchange="players[${i}].power=this.value;save()"></label>
     </div>`;
   });
 }
 function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 function createTeams(){
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  const gks = players.filter(p=>p.pos.includes('GK'));
-  const others = players.filter(p=>!p.pos.includes('GK'));
+  const gks = shuffle(players.filter(p=>p.pos.includes('GK')));
+  const others = shuffle(players.filter(p=>!p.pos.includes('GK')));
   let t1=[], t2=[], p1=0, p2=0;
   if(mode==='two' && gks.length>=2){ t1.push(gks[0]); t2.push(gks[1]); p1+=Number(gks[0].power); p2+=Number(gks[1].power); }
   others.sort((a,b)=>b.power-a.power).forEach(p=>{ if(p1<=p2){ t1.push(p); p1+=Number(p.power); } else { t2.push(p); p2+=Number(p.power); } });
-  if(mode==='one'){ document.getElementById('teams').innerHTML = teamHTML('Bizim Takım',players,false,document.getElementById('colorA').value); return; }
-  document.getElementById('teams').innerHTML = teamHTML('Takım A',t1,vestTeam===1,document.getElementById('colorA').value) + teamHTML('Takım B',t2,vestTeam===2,document.getElementById('colorB').value);
+  if(mode==='one'){ document.getElementById('teams').innerHTML = teamHTML('Bizim Takım',shuffle(players),false,document.getElementById('colorA').value,'A'); return; }
+  document.getElementById('teams').innerHTML = teamHTML('Takım A',t1,vestTeam===1,document.getElementById('colorA').value,'A') + teamHTML('Takım B',t2,vestTeam===2,document.getElementById('colorB').value,'B');
 }
-function teamHTML(title,team,vest,color){
+function setTeamCaptain(team,playerName){ teamCaptains[team]=playerName; createTeams(); }
+function teamHTML(title,team,vest,color,teamId){
+  let html=`<h3>${vest?'🦺 ':''}${title}`;
+  html+=` <button onclick="setCaptain('${teamId}', prompt('Kaptan ismini gir:'))">Kaptan Seç</button>`;
+  if(teamCaptains[teamId]) html+=` 🧢 ${teamCaptains[teamId]}`;
+  html+=`</h3><div class="field" style="border:3px solid ${color}">`;
   const lines={GK:[],DEF:[],MID:[],FWD:[]}; team.forEach(p=>{ const pos = p.pos.includes('GK')?'GK':p.pos.includes('DEF')?'DEF':p.pos.includes('MID')?'MID':'FWD'; lines[pos].push(p); });
-  let html=`<h3>${vest?'🦺 ':''}${title}</h3><div class="field" style="border:3px solid ${color}">`;
-  ['GK','DEF','MID','FWD'].forEach(l=>{ if(lines[l].length){ html+='<div class="line">'; lines[l].forEach(p=>{ html+=`<div class="card" style="border:2px solid ${color}"><div class="name">${p.captain?'🧢 ':''}${p.name}</div><div class="pos">${l}</div></div>`; }); html+='</div>'; } });
+  ['GK','DEF','MID','FWD'].forEach(l=>{ if(lines[l].length){ html+='<div class="line">'; lines[l].forEach(p=>{ html+=`<div class="card" style="border:2px solid ${color}"><div class="name">${p.name}</div><div class="pos">${l} (${p.power})</div></div>`; }); html+='</div>'; } });
   html+='</div>'; return html;
 }
 function toggleVest(){ vestTeam=vestTeam===1?2:1; createTeams(); }
-function shareImage(){ alert('Şimdilik ekran görüntüsü alarak paylaşabilirsin 🙂'); }
+function shareImage(){ html2canvas(document.getElementById('teams')).then(canvas=>{ const link=document.createElement('a'); link.download='takimlar.png'; link.href=canvas.toDataURL(); link.click(); }); }
 renderPlayers();
 </script>
 </body>
