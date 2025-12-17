@@ -62,6 +62,7 @@
 <button onclick="createTeams()">🏟️ Takım Oluştur</button>
 <button onclick="toggleVest()">🦺 Yelek Değiştir</button>
 <button onclick="shareImage()">📸 Resim Paylaş</button>
+<button onclick="clearCache()">🧹 Cache Temizle</button>
 
 <div style="margin:10px 0;">
   <label>Takım A Forma Rengi: <input type="color" id="colorA" value="#ffc107"></label>
@@ -118,18 +119,24 @@ function addSinglePlayer() {
     save();
     renderPlayers();
     document.getElementById('singlePlayerName').value = ''; // input alanını temizle
+  } else {
+    alert("Lütfen oyuncu ismini girin.");
   }
 }
 
 function addBulkPlayers() {
   const bulkNames = document.getElementById('bulkNames').value;
-  const names = bulkNames.split(',').map(name => name.trim()); // Virgülle ayırarak isimleri al
-  names.forEach(name => {
-    players.push({ name, pos: [], power: 3 });
-  });
-  save();
-  renderPlayers();
-  document.getElementById('bulkNames').value = ''; // input alanını temizle
+  if (bulkNames) {
+    const names = bulkNames.split(',').map(name => name.trim()); // Virgülle ayırarak isimleri al
+    names.forEach(name => {
+      players.push({ name, pos: [], power: 3 });
+    });
+    save();
+    renderPlayers();
+    document.getElementById('bulkNames').value = ''; // input alanını temizle
+  } else {
+    alert("Lütfen oyuncu isimlerini girin.");
+  }
 }
 
 function toggle(i, pos) {
@@ -187,6 +194,11 @@ function toggleVest() { vestTeam = vestTeam === 1 ? 2 : 1; createTeams(); }
 
 function shareImage() {
   alert('Ekran görüntüsü alarak paylaşabilirsiniz 🙂');
+}
+
+function clearCache() {
+  localStorage.clear();
+  alert('Veriler temizlendi!');
 }
 
 renderPlayers();
