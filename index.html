@@ -62,14 +62,11 @@ function renderPlayers(){
       <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''} onchange="toggle(${i},'DEF')">DEF</label>
       <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''} onchange="toggle(${i},'MID')">MID</label>
       <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''} onchange="toggle(${i},'FWD')">FWD</label>
-      <button onclick="selectPower(${i})">Kalite: ${p.power}</button>
+      <select onchange="players[${i}].power=this.value;save()">
+        ${Array.from({length:10},(_,k)=>k+1).map(n=>`<option ${p.power==n?'selected':''}>${n}</option>`).join('')}
+      </select>
     </div>`;
   });
-}
-function selectPower(i){
-  const val = prompt('1-10 arası kalite seç:', players[i].power);
-  const num = parseInt(val);
-  if(num>=1 && num<=10){ players[i].power=num; save(); renderPlayers(); }
 }
 function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 function createTeams(){
