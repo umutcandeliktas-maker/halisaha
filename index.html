@@ -25,73 +25,114 @@
 <body>
 <header>⚽ Halısaha Takım Kurucu</header>
 <div class="container">
-<h3>Oyuncular (<span id="count">0</span>)</h3>
-<button onclick="addPlayer()">➕ Oyuncu Ekle</button>
-<button class="danger" onclick="removePlayer()">➖ Oyuncu Sil</button>
-<div id="players"></div>
-<hr>
-<label><input type="radio" name="mode" value="one" checked> Tek takım</label>
-<label style="margin-left:10px;"><input type="radio" name="mode" value="two"> İki takım</label>
-<br><br>
-<button onclick="createTeams()">🏟️ Takım Oluştur</button>
-<button onclick="toggleVest()">🦺 Yelek Değiştir</button>
-<button onclick="shareImage()">📸 Resim Paylaş</button>
-<div style="margin:10px 0;">
-  <label>Takım A Forma Rengi: <input type="color" id="colorA" value="#ffc107"></label>
-  <label style="margin-left:10px;">Takım B Forma Rengi: <input type="color" id="colorB" value="#0dcaf0"></label>
+  <h3>Oyuncular (<span id="count">0</span>)</h3>
+  <button onclick="addPlayer()">➕ Oyuncu Ekle</button>
+  <button class="danger" onclick="removePlayer()">➖ Oyuncu Sil</button>
+  <div id="players"></div>
+  <hr>
+  <label><input type="radio" name="mode" value="one" checked> Tek takım</label>
+  <label style="margin-left:10px;"><input type="radio" name="mode" value="two"> İki takım</label>
+  <br><br>
+  <button onclick="createTeams()">🏟️ Takım Oluştur</button>
+  <button onclick="toggleVest()">🦺 Yelek Değiştir</button>
+  <button onclick="shareImage()">📸 Resim Paylaş</button>
+  <div style="margin:10px 0;">
+    <label>Takım A Forma Rengi: <input type="color" id="colorA" value="#ffc107"></label>
+    <label style="margin-left:10px;">Takım B Forma Rengi: <input type="color" id="colorB" value="#0dcaf0"></label>
+  </div>
+  <div id="teams"></div>
 </div>
-<div id="teams"></div>
-</div>
+
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-let players = JSON.parse(localStorage.getItem('players')) || [];
-let vestTeam = 1;
-let teamCaptains = {A:null,B:null};
-if(players.length === 0){ players.push({name:'',pos:[],power:5}); save(); }
-function save(){ localStorage.setItem('players', JSON.stringify(players)); }
-function addPlayer(){ players.push({name:'',pos:[],power:5}); save(); renderPlayers(); }
-function removePlayer(){ players.pop(); save(); renderPlayers(); }
-function toggle(i,pos){ const p = players[i].pos; players[i].pos = p.includes(pos) ? p.filter(x=>x!==pos) : [...p,pos]; save(); }
-function renderPlayers(){
-  const div = document.getElementById('players'); div.innerHTML='';
-  document.getElementById('count').innerText = players.length;
-  players.forEach((p,i)=>{
-    div.innerHTML += `<div class="player">
-      <input placeholder="İsim" value="${p.name}" onchange="players[${i}].name=this.value;save()">
-      <label><input type="checkbox" ${p.pos.includes('GK')?'checked':''} onchange="toggle(${i},'GK')">GK</label>
-      <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''} onchange="toggle(${i},'DEF')">DEF</label>
-      <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''} onchange="toggle(${i},'MID')">MID</label>
-      <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''} onchange="toggle(${i},'FWD')">FWD</label>
-      <select onchange="players[${i}].power=this.value;save()">
-        ${Array.from({length:10},(_,k)=>k+1).map(n=>`<option ${p.power==n?'selected':''}>${n}</option>`).join('')}
-      </select>
-    </div>`;
-  });
-}
-function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
-function createTeams(){
-  const mode = document.querySelector('input[name="mode"]:checked').value;
-  const gks = shuffle(players.filter(p=>p.pos.includes('GK')));
-  const others = shuffle(players.filter(p=>!p.pos.includes('GK')));
-  let t1=[], t2=[], p1=0, p2=0;
-  if(mode==='two' && gks.length>=2){ t1.push(gks[0]); t2.push(gks[1]); p1+=Number(gks[0].power); p2+=Number(gks[1].power); }
-  others.sort((a,b)=>b.power-a.power).forEach(p=>{ if(p1<=p2){ t1.push(p); p1+=Number(p.power); } else { t2.push(p); p2+=Number(p.power); } });
-  if(mode==='one'){ document.getElementById('teams').innerHTML = teamHTML('Bizim Takım',shuffle(players),false,document.getElementById('colorA').value,'A'); return; }
-  document.getElementById('teams').innerHTML = teamHTML('Takım A',t1,vestTeam===1,document.getElementById('colorA').value,'A') + teamHTML('Takım B',t2,vestTeam===2,document.getElementById('colorB').value,'B');
-}
-function setTeamCaptain(team,playerName){ teamCaptains[team]=playerName; createTeams(); }
-function teamHTML(title,team,vest,color,teamId){
-  let html=`<h3>${vest?'🦺 ':''}${title}`;
-  html+=` <button onclick="setTeamCaptain('${teamId}', prompt('Kaptan ismini gir:'))">Kaptan Seç</button>`;
-  if(teamCaptains[teamId]) html+=` 🧢 ${teamCaptains[teamId]}`;
-  html+=`</h3><div class="field" style="border:3px solid ${color}">`;
-  const lines={GK:[],DEF:[],MID:[],FWD:[]}; team.forEach(p=>{ const pos = p.pos.includes('GK')?'GK':p.pos.includes('DEF')?'DEF':p.pos.includes('MID')?'MID':'FWD'; lines[pos].push(p); });
-  ['GK','DEF','MID','FWD'].forEach(l=>{ if(lines[l].length){ html+='<div class="line">'; lines[l].forEach(p=>{ html+=`<div class="card" style="border:2px solid ${color}"><div class="name">${p.name}</div><div class="pos">${l} (${p.power})</div></div>`; }); html+='</div>'; } });
-  html+='</div>'; return html;
-}
-function toggleVest(){ vestTeam=vestTeam===1?2:1; createTeams(); }
-function shareImage(){ html2canvas(document.getElementById('teams')).then(canvas=>{ const link=document.createElement('a'); link.download='takimlar.png'; link.href=canvas.toDataURL(); link.click(); }); }
-renderPlayers();
+  let players = JSON.parse(localStorage.getItem('players')) || [];
+  let vestTeam = 1;
+  let teamCaptains = {A:null,B:null};
+  if(players.length === 0){ players.push({name:'',pos:[],power:5}); save(); }
+
+  function save(){ localStorage.setItem('players', JSON.stringify(players)); }
+  function addPlayer(){ players.push({name:'',pos:[],power:5}); save(); renderPlayers(); }
+  function removePlayer(){ players.pop(); save(); renderPlayers(); }
+  function toggle(i,pos){ const p = players[i].pos; players[i].pos = p.includes(pos) ? p.filter(x=>x!==pos) : [...p,pos]; save(); }
+  
+  function renderPlayers(){
+    const div = document.getElementById('players'); div.innerHTML='';
+    document.getElementById('count').innerText = players.length;
+    players.forEach((p,i)=>{
+      div.innerHTML += `<div class="player">
+        <input placeholder="İsim" value="${p.name}" onchange="players[${i}].name=this.value;save()">
+        <label><input type="checkbox" ${p.pos.includes('GK')?'checked':''} onchange="toggle(${i},'GK')">GK</label>
+        <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''} onchange="toggle(${i},'DEF')">DEF</label>
+        <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''} onchange="toggle(${i},'MID')">MID</label>
+        <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''} onchange="toggle(${i},'FWD')">FWD</label>
+        <select onchange="players[${i}].power=this.value;save()">
+          ${Array.from({length:10},(_,k)=>k+1).map(n=>`<option ${p.power==n?'selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>`;
+    });
+  }
+
+  function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+
+  function createTeams(){
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const gks = shuffle(players.filter(p=>p.pos.includes('GK')));
+    const others = shuffle(players.filter(p=>!p.pos.includes('GK')));
+    let t1=[], t2=[], p1=0, p2=0;
+    if(mode==='two' && gks.length>=2){ t1.push(gks[0]); t2.push(gks[1]); p1+=Number(gks[0].power); p2+=Number(gks[1].power); }
+    others.sort((a,b)=>b.power-a.power).forEach(p=>{ if(p1<=p2){ t1.push(p); p1+=Number(p.power); } else { t2.push(p); p2+=Number(p.power); } });
+    if(mode==='one'){ document.getElementById('teams').innerHTML = teamHTML('Bizim Takım',shuffle(players),false,document.getElementById('colorA').value,'A'); return; }
+    document.getElementById('teams').innerHTML = teamHTML('Takım A',t1,vestTeam===1,document.getElementById('colorA').value,'A') + teamHTML('Takım B',t2,vestTeam===2,document.getElementById('colorB').value,'B');
+  }
+
+  function setTeamCaptain(team,playerName){ teamCaptains[team]=playerName; createTeams(); }
+
+  function teamHTML(title,team,vest,color,teamId){
+    let html=`<h3>${vest?'🦺 ':''}${title}`;
+    html+=` <button onclick="setTeamCaptain('${teamId}', prompt('Kaptan ismini gir:'))">Kaptan Seç</button>`;
+    if(teamCaptains[teamId]) html+=` 🧢 ${teamCaptains[teamId]}`;
+    html+=`</h3><div class="field" style="border:3px solid ${color}">`;
+    const lines={GK:[],DEF:[],MID:[],FWD:[]}; team.forEach(p=>{
+      const pos = p.pos.includes('GK')?'GK':p.pos.includes('DEF')?'DEF':p.pos.includes('MID')?'MID':'FWD';
+      lines[pos].push(p);
+    });
+    ['GK','DEF','MID','FWD'].forEach(l=>{
+      if(lines[l].length){
+        html+='<div class="line">';
+        lines[l].forEach(p=>{
+          html+=`<div class="card" style="border:2px solid ${color}"><div class="name">${p.name}</div><div class="pos">${l} (${p.power})</div></div>`;
+        });
+        html+='</div>';
+      }
+    });
+    html+='</div>';
+    return html;
+  }
+
+  function toggleVest(){ vestTeam=vestTeam===1?2:1; createTeams(); }
+
+  function shareImage(){
+    if (navigator.share) {
+      html2canvas(document.getElementById('teams')).then(canvas => {
+        canvas.toBlob(blob => {
+          navigator.share({
+            title: 'Halı Saha Takım',
+            text: 'Takımınız hazır!',
+            files: [{url: URL.createObjectURL(blob), name: 'takimlar.png'}]
+          });
+        });
+      });
+    } else {
+      html2canvas(document.getElementById('teams')).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'takimlar.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+  }
+
+  renderPlayers();
 </script>
 </body>
 </html>
