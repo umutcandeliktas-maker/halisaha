@@ -26,17 +26,28 @@
 
 <div class="container">
 
-<h3>Oyuncular (<span id="count">0</span>)</h3>
+<h3>Oyuncu Eklemek İçin Ne Yapmak İstersin?</h3>
+<p>İster tek tek oyuncuları ekleyebilirsin, ister bir seferde çoklu oyuncuları ekleyebilirsin. Seçimini yap ve başla!</p>
 
-<!-- Tek tek oyuncu eklemek için alan -->
-<input type="text" id="singlePlayerName" placeholder="Oyuncu İsmi Girin">
-<button onclick="addSinglePlayer()">➕ Tek Oyuncu Ekle</button>
+<!-- Oyuncu ekleme türünü seçmek için butonlar -->
+<button onclick="showSinglePlayerInput()">➕ Tek Tek Oyuncu Ekle</button>
+<button onclick="showBulkPlayerInput()">➕ Çoklu Oyuncu Ekle</button>
 
-<br><br>
+<hr>
 
-<!-- Çoklu oyuncu eklemek için alan -->
-<input type="text" id="bulkNames" placeholder="İsimleri virgülle ayırarak girin">
-<button onclick="addBulkPlayers()">➕ Çoklu Oyuncu Ekle</button>
+<div id="singlePlayerSection" style="display:none;">
+  <h4>Tek Tek Oyuncu Ekle</h4>
+  <input type="text" id="singlePlayerName" placeholder="Oyuncu İsmini Girin">
+  <button onclick="addSinglePlayer()">Oyuncu Ekle</button>
+  <p>Her oyuncu için ismini gir ve "Oyuncu Ekle" butonuna tıkla.</p>
+</div>
+
+<div id="bulkPlayerSection" style="display:none;">
+  <h4>Çoklu Oyuncu Ekle</h4>
+  <input type="text" id="bulkNames" placeholder="İsimleri virgülle ayırarak girin (Örneğin: Ali, Veli, Ahmet)">
+  <button onclick="addBulkPlayers()">Oyuncuları Ekle</button>
+  <p>Birden fazla oyuncuyu aynı anda eklemek için isimleri virgülle ayırarak yaz ve "Oyuncuları Ekle" butonuna tıkla.</p>
+</div>
 
 <hr>
 
@@ -88,6 +99,16 @@ function renderPlayers() {
       </div>
     `;
   });
+}
+
+function showSinglePlayerInput() {
+  document.getElementById('singlePlayerSection').style.display = 'block';
+  document.getElementById('bulkPlayerSection').style.display = 'none';
+}
+
+function showBulkPlayerInput() {
+  document.getElementById('bulkPlayerSection').style.display = 'block';
+  document.getElementById('singlePlayerSection').style.display = 'none';
 }
 
 function addSinglePlayer() {
@@ -170,5 +191,6 @@ function shareImage() {
 
 renderPlayers();
 </script>
+
 </body>
 </html>
