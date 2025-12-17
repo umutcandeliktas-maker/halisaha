@@ -85,11 +85,17 @@
     document.getElementById('teams').innerHTML = teamHTML('Takım A',t1,vestTeam===1,document.getElementById('colorA').value,'A') + teamHTML('Takım B',t2,vestTeam===2,document.getElementById('colorB').value,'B');
   }
 
-  function setTeamCaptain(team,playerName){ teamCaptains[team]=playerName; createTeams(); }
+  function setTeamCaptainFromSelect(event, team){
+    teamCaptains[team] = event.target.value;
+    createTeams();
+  }
 
   function teamHTML(title,team,vest,color,teamId){
     let html=`<h3>${vest?'🦺 ':''}${title}`;
-    html+=` <button onclick="setTeamCaptain('${teamId}', prompt('Kaptan ismini gir:'))">Kaptan Seç</button>`;
+    html+=` <select onchange="setTeamCaptainFromSelect(event, '${teamId}')">
+              <option value="">Kaptan Seç</option>
+              ${team.map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
+            </select>`;
     if(teamCaptains[teamId]) html+=` 🧢 ${teamCaptains[teamId]}`;
     html+=`</h3><div class="field" style="border:3px solid ${color}">`;
     const lines={GK:[],DEF:[],MID:[],FWD:[]}; team.forEach(p=>{
