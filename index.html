@@ -17,12 +17,12 @@ input, select { padding:6px; border-radius:4px; border:none; margin:2px; }
 
 .player { background:#198754; padding:8px; border-radius:6px; margin-bottom:6px; }
 
-.field { background:#198754; border-radius:10px; padding:10px; margin:15px 0; }
-.line { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.field { background:#198754; border-radius:10px; padding:10px; margin:15px 0; display:flex; flex-direction:column; align-items:center; }
+.line { display:flex; justify-content:center; gap:8px; margin:5px 0; flex-wrap:wrap; }
 
 .card {
   background:#fff; color:#000; padding:6px 8px;
-  border-radius:6px; min-width:70px;
+  border-radius:6px; min-width:60px;
   text-align:center; font-size:13px;
   cursor:grab;
 }
@@ -178,7 +178,7 @@ function createTeams(){
   enableDrag();
 }
 
-/* SAHA + MEVKİ */
+/* SAHA + MEVKİ (ORTALANMIŞ) */
 function teamHTML(title, team, vest, color){
   const lines={GK:[],DEF:[],MID:[],FWD:[]};
   team.forEach(p=>{
@@ -187,14 +187,14 @@ function teamHTML(title, team, vest, color){
   });
 
   let html=`<h3>${vest?'🦺 ':''}${title}</h3>
-  <div class="field" style="border:3px solid ${color}">`;
+  <div class="field" style="border:3px solid ${color};">`;
 
   ['GK','DEF','MID','FWD'].forEach(l=>{
     if(lines[l].length){
-      html+=`<div class="line">`;
+      html+=`<div class="line" style="display:flex; justify-content:center; gap:8px; margin:5px 0;">`;
       lines[l].forEach(p=>{
         html+=`
-        <div class="card" draggable="true" style="border:2px solid ${color}">
+        <div class="card" draggable="true" style="border:2px solid ${color}; min-width:60px; text-align:center;">
           <div class="name">${p.name}</div>
           <div class="pos">${l} ⭐${p.power}</div>
         </div>`;
