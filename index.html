@@ -16,31 +16,7 @@
 <!-- Oyuncu Sayısı -->
 <div class="mb-4">
   <label class="mr-2">Oyuncu Sayısı:</label>
-  <select id="playerCount" class="text-black p-1 rounded">
-    <option value="">Seç</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-    <option value="9">9</option>
-    <option value="10">10</option>
-    <option value="11">11</option>
-    <option value="12">12</option>
-    <option value="13">13</option>
-    <option value="14">14</option>
-    <option value="15">15</option>
-    <option value="16">16</option>
-    <option value="17">17</option>
-    <option value="18">18</option>
-    <option value="19">19</option>
-    <option value="20">20</option>
-    <option value="21">21</option>
-    <option value="22">22</option>
-  </select>
+  <select id="playerCount" class="text-black p-1 rounded"></select>
   <button onclick="generatePlayers()" class="bg-yellow-500 text-black px-3 py-1 rounded font-bold ml-2">Oluştur</button>
   <button onclick="clearCache()" class="bg-red-600 px-3 py-1 rounded font-bold ml-2">Cache Temizle</button>
 </div>
@@ -73,11 +49,19 @@
 </div>
 
 <script>
+// Player count seçenekleri (1-22)
+const playerCountSelect = document.getElementById('playerCount');
+for(let i=1;i<=22;i++){
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    playerCountSelect.appendChild(option);
+}
+
 const playersDiv = document.getElementById('players');
 const teamsDiv = document.getElementById('teams');
 const colorA = document.getElementById('colorA');
 const colorB = document.getElementById('colorB');
-const countSelect = document.getElementById('playerCount');
 
 let players = JSON.parse(localStorage.getItem('players')) || [];
 let vestTeam = 1;
@@ -87,7 +71,7 @@ function save(){ localStorage.setItem('players', JSON.stringify(players)); }
 
 /* OYUNCU OLUŞTUR */
 function generatePlayers(){
-  const c = Number(countSelect.value);
+  const c = Number(playerCountSelect.value);
   if(!c) return alert("Oyuncu sayısı seç");
   players=[];
   for(let i=1;i<=c;i++) players.push({ name:`Oyuncu ${i}`, power:3, pos:[] });
