@@ -49,21 +49,28 @@
 </div>
 
 <script>
-// Player count seçenekleri (1-22)
-const playerCountSelect = document.getElementById('playerCount');
-for(let i=1;i<=22;i++){
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = i;
-    playerCountSelect.appendChild(option);
-}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const playerCountSelect = document.getElementById('playerCount');
+  for(let i=1;i<=22;i++){
+      const option = document.createElement('option');
+      option.value = i;
+      option.textContent = i;
+      playerCountSelect.appendChild(option);
+  }
+
+  // Daha önce kaydedilmiş oyuncular varsa yükle
+  if(localStorage.getItem('players')){
+    players = JSON.parse(localStorage.getItem('players'));
+    renderPlayers();
+  }
+});
 
 const playersDiv = document.getElementById('players');
 const teamsDiv = document.getElementById('teams');
 const colorA = document.getElementById('colorA');
 const colorB = document.getElementById('colorB');
 
-let players = JSON.parse(localStorage.getItem('players')) || [];
+let players = [];
 let vestTeam = 1;
 
 /* LOCAL STORAGE */
@@ -71,7 +78,7 @@ function save(){ localStorage.setItem('players', JSON.stringify(players)); }
 
 /* OYUNCU OLUŞTUR */
 function generatePlayers(){
-  const c = Number(playerCountSelect.value);
+  const c = Number(document.getElementById('playerCount').value);
   if(!c) return alert("Oyuncu sayısı seç");
   players=[];
   for(let i=1;i<=c;i++) players.push({ name:`Oyuncu ${i}`, power:3, pos:[] });
@@ -222,8 +229,6 @@ function clearCache(){
   alert('Cache temizlendi');
 }
 
-if(players.length) renderPlayers();
 </script>
-
 </body>
 </html>
