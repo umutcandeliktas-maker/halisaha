@@ -93,7 +93,7 @@
 
 <script>
 let players = [];
-const STORAGE_KEY = 'halisaha_v4_final';
+const STORAGE_KEY = 'halisaha_v5_clean';
 
 document.addEventListener('DOMContentLoaded', () => {
   const select = document.getElementById('playerCount');
@@ -122,7 +122,8 @@ function generatePlayers() {
   const count = Number(document.getElementById('playerCount').value);
   players = [];
   for (let i = 1; i <= count; i++) {
-    players.push({ name: `Oyuncu ${i}`, power: 3, roles: ['MID'] });
+    // BURASI DEĞİŞTİ: Roles artık boş dizi olarak başlıyor
+    players.push({ name: `Oyuncu ${i}`, power: 3, roles: [] });
   }
   save();
   renderPlayers();
@@ -158,7 +159,7 @@ function renderPlayers() {
 function toggleRole(playerIdx, role) {
   const currentRoles = players[playerIdx].roles;
   if (currentRoles.includes(role)) {
-    if (currentRoles.length > 1) players[playerIdx].roles = currentRoles.filter(r => r !== role);
+    players[playerIdx].roles = currentRoles.filter(r => r !== role);
   } else {
     players[playerIdx].roles.push(role);
   }
@@ -197,7 +198,10 @@ function createTeams() {
       el.textContent = p.name;
       el.style.backgroundColor = color;
       
-      let selectedRole = p.roles[0];
+      // Mevki seçilmemişse varsayılan bir nokta (orta saha civarı) ata
+      let selectedRole = p.roles.length > 0 ? p.roles[0] : 'MID';
+      
+      // Önceliklendirme
       if(p.roles.includes('GK')) selectedRole = 'GK';
       else if(p.roles.includes('FWD')) selectedRole = 'FWD';
 
