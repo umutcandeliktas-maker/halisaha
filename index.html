@@ -49,6 +49,7 @@
 </div>
 
 <script>
+// ======= LISTE DOLDUR =======
 document.addEventListener('DOMContentLoaded', ()=>{
   const playerCountSelect = document.getElementById('playerCount');
   for(let i=1;i<=22;i++){
@@ -65,6 +66,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 
+// ======= GLOBAL =======
 const playersDiv = document.getElementById('players');
 const teamsDiv = document.getElementById('teams');
 const colorA = document.getElementById('colorA');
@@ -73,10 +75,10 @@ const colorB = document.getElementById('colorB');
 let players = [];
 let vestTeam = 1;
 
-/* LOCAL STORAGE */
+// ======= LOCAL STORAGE =======
 function save(){ localStorage.setItem('players', JSON.stringify(players)); }
 
-/* OYUNCU OLUŞTUR */
+// ======= OYUNCU OLUŞTUR =======
 function generatePlayers(){
   const c = Number(document.getElementById('playerCount').value);
   if(!c) return alert("Oyuncu sayısı seç");
@@ -87,7 +89,7 @@ function generatePlayers(){
   teamsDiv.innerHTML='';
 }
 
-/* OYUNCU LİSTESİ */
+// ======= OYUNCU LİSTESİ =======
 function renderPlayers(){
   playersDiv.innerHTML='';
   players.forEach((p,i)=>{
@@ -117,14 +119,14 @@ function togglePos(i,pos){
   save();
 }
 
-/* YELEK */
+// ======= YELEK =======
 function toggleVest(){
   if(players.length===0) return;
   vestTeam = Math.random()<0.5 ? 1 : 2;
   createTeams();
 }
 
-/* OTOMATİK POZİSYON ATAMA */
+// ======= OTOMATİK POZİSYON =======
 function autoPositions(team){
   const n = team.length;
   let gk=1, def=3, mid=1, fwd=2;
@@ -139,7 +141,7 @@ function autoPositions(team){
   return team;
 }
 
-/* TAKIM OLUŞTUR */
+// ======= TAKIM OLUŞTUR =======
 function createTeams(){
   if(players.length===0) return alert("Oyuncu yok");
   const mode=document.querySelector('input[name="mode"]:checked').value;
@@ -166,7 +168,7 @@ function createTeams(){
   enableDrag();
 }
 
-/* SAHA + MEVKİ (ORTALANMIŞ) */
+// ======= SAHA + MEVKİ =======
 function teamHTML(title, team, vest, color){
   const lines={GK:[],DEF:[],MID:[],FWD:[]};
   team.forEach(p=>{
@@ -194,7 +196,7 @@ function teamHTML(title, team, vest, color){
   return html;
 }
 
-/* DRAG & DROP */
+// ======= DRAG & DROP =======
 function enableDrag(){
   document.querySelectorAll('.card').forEach(c=>{
     c.addEventListener('dragstart',()=>c.classList.add('dragging'));
@@ -209,7 +211,7 @@ function enableDrag(){
   });
 }
 
-/* RESİM İNDİR */
+// ======= RESİM İNDİR =======
 function shareImage(){
   if(!teamsDiv.innerHTML) return alert("Önce takım oluştur");
   html2canvas(teamsDiv).then(c=>{
@@ -220,7 +222,7 @@ function shareImage(){
   });
 }
 
-/* CACHE TEMİZLE */
+// ======= CACHE TEMİZLE =======
 function clearCache(){
   localStorage.removeItem('players');
   players=[];
