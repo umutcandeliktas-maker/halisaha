@@ -163,10 +163,17 @@ function createTeams() {
 
   if (mode === 'one') {
     a = autoPositions(list);
-    console.log("Takım A (Tek Takım):", a);
+    console.log("Tek Takım:", a);
   } else {
+    // Güce göre oyuncuları iki takıma ayırıyoruz
     list.forEach(p => {
-      if (pa <= pb) { a.push(p); pa += +p.power; } else { b.push(p); pb += +p.power; }
+      if (pa <= pb) {
+        a.push(p);
+        pa += p.power;
+      } else {
+        b.push(p);
+        pb += p.power;
+      }
     });
     a = autoPositions(a);
     b = autoPositions(b);
