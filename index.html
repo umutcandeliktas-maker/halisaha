@@ -3,50 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Halı Saha Taktik Pro</title>
+  <title>Halı Saha Pro - Mevki & Resizable</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* SAHA ÖLÇÜLERİ GENİŞLETİLDİ */
+    /* SAHA AYARLARI */
+    .field-container {
+      position: relative;
+      margin: 20px auto;
+      padding-bottom: 30px; /* Resize tutamacı için alan */
+      width: fit-content;
+    }
     .field {
       position: relative;
-      width: 100%;
-      max-width: 950px; /* Daha geniş */
-      height: 600px;    /* Daha yüksek ve ferah */
+      width: 900px; /* Başlangıç genişliği */
+      height: 600px; /* Başlangıç yüksekliği */
       background-color: #15803d;
       border: 5px solid white;
       border-radius: 12px;
-      margin: 20px auto;
       overflow: hidden;
+      resize: both; /* SAHAYI GENİŞLETME ÖZELLİĞİ */
+      min-width: 400px;
+      min-height: 300px;
       touch-action: none;
     }
+    /* Sağ alt köşe resize ikonu için */
+    .field::after {
+      content: "⌟";
+      position: absolute;
+      bottom: 0;
+      right: 5px;
+      color: white;
+      font-size: 30px;
+      pointer-events: none;
+    }
+
     .line { position: absolute; background: white; }
     .center-line { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
-    .center-circle { top: 50%; left: 50%; width: 110px; height: 110px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
-    .goal { position: absolute; width: 15px; height: 140px; border: 3px solid white; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); }
-    .penalty-area-a { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 100px; height: 300px; border: 2px solid white; border-left: none; }
-    .penalty-area-b { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 100px; height: 300px; border: 2px solid white; border-right: none; }
+    .center-circle { top: 50%; left: 50%; width: 15%; height: 22%; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
+    .goal { position: absolute; width: 2%; height: 25%; border: 3px solid white; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); }
+    .penalty-area-a { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 12%; height: 50%; border: 2px solid white; border-left: none; }
+    .penalty-area-b { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 12%; height: 50%; border: 2px solid white; border-right: none; }
     
     .player {
       position: absolute;
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 50px;
       font-weight: bold;
       color: black;
       cursor: grab;
       user-select: none;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
       z-index: 10;
       white-space: nowrap;
       border: 2px solid rgba(0,0,0,0.3);
-      font-size: 14px;
+      font-size: 13px;
     }
     .player:active { cursor: grabbing; transform: scale(1.1); z-index: 100; }
     
     .ball {
       position: absolute;
-      width: 35px;
-      height: 35px;
+      width: 30px;
+      height: 30px;
       background: white;
       border-radius: 50%;
       display: flex;
@@ -59,45 +77,44 @@
 </head>
 <body class="bg-slate-900 text-white font-sans">
 
-<header class="bg-slate-800 text-center text-2xl font-black py-4 border-b-4 border-green-500">
-  ⚽ ÖZEL DİZİLİŞLİ TAKTİK TAHTASI
+<header class="bg-slate-800 text-center text-2xl font-black py-4 border-b-4 border-yellow-500 shadow-xl">
+  ⚽ PRO TAKTİK TAHTASI (MEVKİ & BOYUT AYARLI)
 </header>
 
 <div class="container mx-auto p-4">
-  <div class="bg-slate-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center justify-between shadow-lg">
+  <div class="bg-slate-800 p-4 rounded-xl mb-6 shadow-lg flex flex-wrap gap-4 items-center justify-between">
     <div class="flex items-center gap-3">
       <label class="font-bold">Oyuncu Sayısı:</label>
       <select id="playerCount" class="bg-slate-700 p-2 rounded w-20 outline-none"></select>
-      <button onclick="generatePlayers()" class="bg-green-600 hover:bg-green-500 px-6 py-2 rounded font-bold transition-all">LİSTEYİ YENİLE</button>
+      <button onclick="generatePlayers()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-bold transition-all text-sm">LİSTEYİ OLUŞTUR</button>
     </div>
     <div class="flex gap-2">
-      <button onclick="createTeams()" class="bg-yellow-500 text-slate-900 px-8 py-2 rounded-full font-black shadow-lg">🏟️ SAHAYA DİZ</button>
-      <button onclick="shareImage()" class="bg-indigo-600 px-6 py-2 rounded-full font-bold">📸 RESMİ KAYDET</button>
+      <button onclick="createTeams()" class="bg-yellow-500 text-slate-900 px-8 py-2 rounded-full font-black shadow-lg hover:bg-yellow-400 transition-all">🏟️ SAHAYA DİZ</button>
+      <button onclick="shareImage()" class="bg-green-600 px-6 py-2 rounded-full font-bold hover:bg-green-500 transition-all text-sm">📸 RESMİ KAYDET</button>
     </div>
   </div>
 
-  <div id="players" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6"></div>
+  <div id="players" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6"></div>
 
-  <div class="flex justify-center gap-6 mb-4 bg-slate-800 p-3 rounded-lg w-fit mx-auto shadow-md">
+  <div class="flex justify-center gap-6 mb-4 bg-slate-800 p-3 rounded-lg w-fit mx-auto border border-slate-700">
     <label class="flex items-center gap-2"><input type="color" id="colorA" value="#fbbf24" class="h-8 w-8 rounded"> Takım A</label>
     <label class="flex items-center gap-2"><input type="color" id="colorB" value="#22d3ee" class="h-8 w-8 rounded"> Takım B</label>
   </div>
 
-  <div id="teams"></div>
+  <div class="field-container">
+    <div id="tacticalField" class="field">
+      <div class="center-line"></div>
+      <div class="center-circle"></div>
+      <div class="penalty-area-a"></div>
+      <div class="penalty-area-b"></div>
+      <div class="goal" style="left:-5px;"></div>
+      <div class="goal" style="right:-5px;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
 let players = [];
-// GÖNDERDİĞİN GÖRSELE GÖRE KOORDİNATLAR (Kaleci -> Defanslar -> Orta Sahalar -> Forvet)
-const tacticPositions = [
-  { x: 50,  y: 280 }, // Kaleci
-  { x: 180, y: 150 }, // Defans Üst
-  { x: 180, y: 280 }, // Defans Orta
-  { x: 180, y: 410 }, // Defans Alt
-  { x: 350, y: 200 }, // Orta Saha Üst
-  { x: 350, y: 360 }, // Orta Saha Alt
-  { x: 450, y: 280 }  // Forvet
-];
 
 document.addEventListener('DOMContentLoaded', () => {
   const select = document.getElementById('playerCount');
@@ -107,19 +124,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if(i === 14) opt.selected = true;
     select.appendChild(opt);
   }
-  if (localStorage.getItem('players')) {
-    players = JSON.parse(localStorage.getItem('players'));
+  if (localStorage.getItem('players_v2')) {
+    players = JSON.parse(localStorage.getItem('players_v2'));
     renderPlayers();
   }
 });
 
-function save() { localStorage.setItem('players', JSON.stringify(players)); }
+function save() { localStorage.setItem('players_v2', JSON.stringify(players)); }
 
 function generatePlayers() {
   const count = Number(document.getElementById('playerCount').value);
   players = [];
+  const roles = ['GK', 'DEF', 'DEF', 'DEF', 'MID', 'MID', 'FWD']; // Varsayılan döngü
   for (let i = 1; i <= count; i++) {
-    players.push({ name: `Oyuncu ${i}` });
+    players.push({ 
+      name: `Oyuncu ${i}`, 
+      power: 3, 
+      pos: roles[(i-1) % 7] // İlk 7 oyuncuya görseldeki rolleri dağıt
+    });
   }
   save();
   renderPlayers();
@@ -130,112 +152,128 @@ function renderPlayers() {
   div.innerHTML = '';
   players.forEach((p, i) => {
     const card = document.createElement('div');
-    card.className = 'bg-slate-700 p-2 rounded flex items-center gap-2 border border-slate-600';
-    card.innerHTML = `<input value="${p.name}" onchange="players[${i}].name=this.value;save()" class="bg-slate-800 text-white p-1 rounded w-full outline-none">`;
+    card.className = 'bg-slate-700 p-3 rounded-lg flex flex-col gap-2 border border-slate-600 shadow-md';
+    card.innerHTML = `
+      <div class="flex gap-2">
+        <input value="${p.name}" onchange="players[${i}].name=this.value;save()" class="bg-slate-800 text-white p-1 rounded w-full outline-none text-sm">
+        <select onchange="players[${i}].power=Number(this.value);save()" class="bg-slate-800 text-yellow-400 p-1 rounded text-xs outline-none">
+          ${[1,2,3,4,5].map(v => `<option value="${v}" ${p.power==v?'selected':''}>⭐${v}</option>`).join('')}
+        </select>
+      </div>
+      <div class="flex gap-1">
+        ${['GK','DEF','MID','FWD'].map(role => `
+          <button onclick="setRole(${i},'${role}')" class="flex-1 text-[10px] py-1 rounded ${p.pos==role?'bg-yellow-500 text-black font-bold':'bg-slate-600 text-slate-400'}">${role}</button>
+        `).join('')}
+      </div>
+    `;
     div.appendChild(card);
   });
 }
 
+function setRole(idx, role) {
+  players[idx].pos = role;
+  save();
+  renderPlayers();
+}
+
 function createTeams() {
-  if (players.length === 0) return;
+  const field = document.getElementById('tacticalField');
+  // Sadece saha çizgilerini koru, oyuncuları temizle
+  const lines = field.querySelectorAll('.center-line, .center-circle, .penalty-area-a, .penalty-area-b, .goal');
+  field.innerHTML = '';
+  lines.forEach(l => field.appendChild(l));
+
   const teamA = [], teamB = [];
-  players.forEach((p, idx) => {
+  // Güç dengeli dağıtım
+  const sorted = [...players].sort((a,b) => b.power - a.power);
+  sorted.forEach((p, idx) => {
     if (idx % 2 === 0) teamA.push(p);
     else teamB.push(p);
   });
-  drawField(teamA, teamB);
-}
 
-function drawField(teamA, teamB) {
-  const container = document.getElementById('teams');
-  container.innerHTML = '';
-  const field = document.createElement('div');
-  field.className = 'field';
-  field.id = "tacticalField";
-  
-  field.innerHTML = `
-    <div class="center-line"></div>
-    <div class="center-circle"></div>
-    <div class="penalty-area-a"></div>
-    <div class="penalty-area-b"></div>
-    <div class="goal" style="left:-8px;"></div>
-    <div class="goal" style="right:-8px;"></div>
-  `;
-
-  // Top (Tam Orta)
+  // Top ekle
   const ball = document.createElement('div');
   ball.className = 'ball';
   ball.innerHTML = '⚽';
-  ball.style.top = '282px'; ball.style.left = '457px';
+  ball.style.top = '48%'; ball.style.left = '48.5%';
   makeDraggable(ball);
   field.appendChild(ball);
 
   const colorA = document.getElementById('colorA').value;
   const colorB = document.getElementById('colorB').value;
 
-  // Takım A'yı görseldeki yerlere diz
-  teamA.forEach((p, i) => {
-    if (i < tacticPositions.length) {
-      const el = createPlayerEl(p, colorA);
-      el.style.left = tacticPositions[i].x + 'px';
-      el.style.top = tacticPositions[i].y + 'px';
+  // Mevki koordinat oranları (Görseldeki dizilişin % bazlı hali)
+  const posMap = {
+    GK: { x: 5, y: 47 },
+    DEF: [{x:18, y:20}, {x:18, y:47}, {x:18, y:74}],
+    MID: [{x:35, y:30}, {x:35, y:64}],
+    FWD: { x: 45, y: 47 }
+  };
+
+  const drawTeam = (team, color, isLeft) => {
+    let counters = { DEF: 0, MID: 0 };
+    team.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'player';
+      el.textContent = p.name;
+      el.style.backgroundColor = color;
+      
+      let coords = { x: 50, y: 50 };
+      if(p.pos === 'GK') coords = posMap.GK;
+      else if(p.pos === 'FWD') coords = posMap.FWD;
+      else if(p.pos === 'DEF') {
+        coords = posMap.DEF[counters.DEF % 3];
+        counters.DEF++;
+      } else {
+        coords = posMap.MID[counters.MID % 2];
+        counters.MID++;
+      }
+
+      let finalX = isLeft ? coords.x : (100 - coords.x - 5);
+      el.style.left = finalX + "%";
+      el.style.top = coords.y + "%";
+      
       makeDraggable(el);
       field.appendChild(el);
-    }
-  });
+    });
+  };
 
-  // Takım B'yi görselin simetriğine diz
-  teamB.forEach((p, i) => {
-    if (i < tacticPositions.length) {
-      const el = createPlayerEl(p, colorB);
-      // X eksenini sahanın sonuna göre aynalıyoruz (950px - X)
-      el.style.left = (910 - tacticPositions[i].x) + 'px';
-      el.style.top = tacticPositions[i].y + 'px';
-      makeDraggable(el);
-      field.appendChild(el);
-    }
-  });
-
-  container.appendChild(field);
-}
-
-function createPlayerEl(p, color) {
-  const div = document.createElement('div');
-  div.className = 'player';
-  div.textContent = p.name;
-  div.style.backgroundColor = color;
-  return div;
+  drawTeam(teamA, colorA, true);
+  drawTeam(teamB, colorB, false);
 }
 
 function makeDraggable(el) {
   let isDragging = false;
-  let startX, startY;
+  let offsetX, offsetY;
 
   const start = (e) => {
     isDragging = true;
     const cx = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const cy = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-    startX = cx - el.offsetLeft;
-    startY = cy - el.offsetTop;
+    const rect = el.getBoundingClientRect();
+    offsetX = cx - rect.left;
+    offsetY = cy - rect.top;
+    el.style.zIndex = 1000;
   };
 
   const move = (e) => {
     if (!isDragging) return;
     const cx = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const cy = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-    let nx = cx - startX;
-    let ny = cy - startY;
+    const field = document.getElementById('tacticalField');
+    const fRect = field.getBoundingClientRect();
     
-    // Saha Sınırları
-    const p = el.parentElement;
-    nx = Math.max(0, Math.min(nx, p.clientWidth - el.offsetWidth));
-    ny = Math.max(0, Math.min(ny, p.clientHeight - el.offsetHeight));
-    
-    el.style.left = nx + 'px';
-    el.style.top = ny + 'px';
+    let nx = cx - fRect.left - offsetX;
+    let ny = cy - fRect.top - offsetY;
+
+    nx = Math.max(0, Math.min(nx, fRect.width - el.offsetWidth));
+    ny = Math.max(0, Math.min(ny, fRect.height - el.offsetHeight));
+
+    el.style.left = nx + "px";
+    el.style.top = ny + "px";
   };
 
-  const end = () => isDragging = false;
+  const end = () => { isDragging = false; el.style.zIndex = 10; };
 
   el.addEventListener('mousedown', start);
   window.addEventListener('mousemove', move);
@@ -250,7 +288,7 @@ function shareImage() {
   html2canvas(field).then(canvas => {
     const a = document.createElement('a');
     a.href = canvas.toDataURL();
-    a.download = 'ozel-dizilis.png';
+    a.download = 'ozel-kadro.png';
     a.click();
   });
 }
