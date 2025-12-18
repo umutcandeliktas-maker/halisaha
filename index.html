@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Halı Saha - Fix</title>
+  <title>Halı Saha Taktik Tahtası</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -11,48 +11,93 @@
       position: relative;
       width: 100%;
       max-width: 800px;
-      height: 450px;
-      background-color: #065f46;
+      height: 500px;
+      background-color: #15803d; /* Yeşil saha rengi */
       border: 4px solid white;
-      border-radius: 12px;
+      border-radius: 8px;
       margin: 20px auto;
       overflow: hidden;
+      touch-action: none; /* Mobil kaydırmayı engeller, sadece sürüklemeye odaklanır */
     }
-    .line { position: absolute; background:white; }
-    .center-line { top:0; left:50%; width:2px; height:100%; transform:translateX(-50%); }
-    .center-circle { top:50%; left:50%; width:80px; height:80px; border:2px solid white; border-radius:50%; transform:translate(-50%,-50%); }
-    .goal { position:absolute; width:10px; height:100px; background:white; top:50%; transform:translateY(-50%); opacity: 0.8; }
-    .player, .ball { position:absolute; padding:4px 10px; border-radius:20px; text-align:center; cursor:grab; user-select:none; font-weight: bold; border: 1px solid rgba(0,0,0,0.3); white-space: nowrap;}
-    .ball { width:30px; height:30px; background:white; display:flex; align-items:center; justify-content:center; border-radius: 50%;}
+    .line { position: absolute; background: white; }
+    .center-line { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
+    .center-circle { top: 50%; left: 50%; width: 90px; height: 90px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
+    .goal { position: absolute; width: 12px; height: 120px; border: 2px solid white; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); }
+    .penalty-area-a { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 80px; height: 240px; border: 2px solid white; border-left: none; }
+    .penalty-area-b { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 80px; height: 240px; border: 2px solid white; border-right: none; }
+    
+    .player {
+      position: absolute;
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-weight: bold;
+      color: black;
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      z-index: 10;
+      transition: transform 0.1s;
+      white-space: nowrap;
+      border: 2px solid rgba(0,0,0,0.2);
+    }
+    .player:active { cursor: grabbing; transform: scale(1.1); z-index: 100; }
+    
+    .ball {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: grab;
+      z-index: 50;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
-<body class="bg-green-900 text-white font-sans">
+<body class="bg-slate-900 text-white font-sans">
 
-<header class="bg-green-700 text-center text-xl font-bold py-4 shadow-lg">⚽ İnteraktif Mini Halı Saha Pro</header>
+<header class="bg-slate-800 text-center text-2xl font-black py-6 shadow-2xl border-b-4 border-yellow-500">
+  ⚽ HALI SAHA TAKTİK TAHTASI
+</header>
 
 <div class="container mx-auto p-4">
-  <div class="bg-green-800 p-4 rounded-lg mb-4 flex gap-4 items-center">
-    <label>Oyuncu Sayısı:</label>
-    <select id="playerCount" class="text-black p-1 rounded"></select>
-    <button onclick="generatePlayers()" class="bg-yellow-500 text-black px-4 py-1 rounded font-bold hover:bg-yellow-400">Oyuncuları Listele</button>
-    <button onclick="clearCache()" class="bg-red-600 px-4 py-1 rounded font-bold hover:bg-red-500">Sıfırla</button>
+  <div class="bg-slate-800 p-6 rounded-xl mb-6 border border-slate-700 shadow-lg">
+    <div class="flex flex-wrap gap-4 items-center justify-between">
+      <div class="flex items-center gap-3">
+        <label class="font-bold">Kişi Sayısı:</label>
+        <select id="playerCount" class="bg-slate-700 text-white p-2 rounded-lg outline-none border border-slate-600 w-20"></select>
+        <button onclick="generatePlayers()" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-6 py-2 rounded-lg font-black transition-all">LİSTEYİ OLUŞTUR</button>
+      </div>
+      <button onclick="clearCache()" class="bg-red-500 hover:bg-red-400 px-4 py-2 rounded-lg font-bold transition-all text-sm">VERİLERİ SIFIRLA</button>
+    </div>
   </div>
 
-  <div id="players" class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4"></div>
+  <div id="players" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6"></div>
 
-  <div class="bg-green-800 p-4 rounded-lg mb-4">
-    <div class="mb-4">
-      <label class="mr-6 cursor-pointer"><input type="radio" name="mode" value="one" checked> Tek Takım (Antrenman)</label>
-      <label class="cursor-pointer"><input type="radio" name="mode" value="two"> İki Takım (Maç)</label>
-    </div>
+  <div class="bg-slate-800 p-6 rounded-xl mb-6 border border-slate-700 shadow-lg">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex gap-6 items-center">
+        <label class="flex items-center gap-2 cursor-pointer bg-slate-700 px-4 py-2 rounded-full border border-slate-600">
+          <input type="radio" name="mode" value="one" checked class="accent-yellow-500"> Tek Takım
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer bg-slate-700 px-4 py-2 rounded-full border border-slate-600">
+          <input type="radio" name="mode" value="two" class="accent-yellow-500"> Çift Takım
+        </label>
+      </div>
+      
+      <div class="flex flex-wrap gap-3">
+        <button onclick="createTeams()" class="bg-green-500 hover:bg-green-400 text-white px-8 py-3 rounded-full font-black shadow-lg transform hover:-translate-y-1 transition-all">SAHAYA DİZ</button>
+        <button onclick="toggleVest()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold transition-all">🦺 RENK DEĞİŞTİR</button>
+        <button onclick="shareImage()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-full font-bold transition-all">📸 RESMİ KAYDET</button>
+      </div>
 
-    <div class="flex flex-wrap gap-4 items-center">
-      <button onclick="createTeams()" class="bg-yellow-500 text-black px-6 py-2 rounded-full font-bold shadow-lg">🏟️ Takımları Sahaya Diz</button>
-      <button onclick="toggleVest()" class="bg-blue-500 px-4 py-2 rounded-full font-bold">🦺 Renkleri Değiştir</button>
-      <button onclick="shareImage()" class="bg-green-500 px-4 py-2 rounded-full font-bold">📸 Resmi İndir</button>
-      <div class="flex gap-4 border-l pl-4 border-green-600">
-        <label>A: <input type="color" id="colorA" value="#ffc107" class="rounded cursor-pointer"></label>
-        <label>B: <input type="color" id="colorB" value="#0dcaf0" class="rounded cursor-pointer"></label>
+      <div class="flex gap-4 p-2 bg-slate-900 rounded-lg">
+        <div class="text-center"><p class="text-xs mb-1">Takım A</p><input type="color" id="colorA" value="#fbbf24" class="h-10 w-10 cursor-pointer rounded"></div>
+        <div class="text-center"><p class="text-xs mb-1">Takım B</p><input type="color" id="colorB" value="#22d3ee" class="h-10 w-10 cursor-pointer rounded"></div>
       </div>
     </div>
   </div>
@@ -61,32 +106,31 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const playerCountSelect = document.getElementById('playerCount');
-  for (let i = 2; i <= 22; i++) {
-    const option = document.createElement('option');
-    option.value = i; option.textContent = i;
-    if(i === 12) option.selected = true;
-    playerCountSelect.appendChild(option);
-  }
+let players = [];
+const playersDiv = document.getElementById('players');
+const teamsDiv = document.getElementById('teams');
 
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('playerCount');
+  for (let i = 2; i <= 22; i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    if(i === 12) opt.selected = true;
+    select.appendChild(opt);
+  }
   if (localStorage.getItem('players')) {
     players = JSON.parse(localStorage.getItem('players'));
     renderPlayers();
   }
 });
 
-let players = [];
-const playersDiv = document.getElementById('players');
-const teamsDiv = document.getElementById('teams');
-
 function save() { localStorage.setItem('players', JSON.stringify(players)); }
 
 function generatePlayers() {
-  const c = Number(document.getElementById('playerCount').value);
+  const count = Number(document.getElementById('playerCount').value);
   players = [];
-  for (let i = 1; i <= c; i++) {
-    players.push({ name: `Oyuncu ${i}`, power: 3, pos: ['MID'] });
+  for (let i = 1; i <= count; i++) {
+    players.push({ name: `Oyuncu ${i}`, power: 3, pos: 'MID' });
   }
   save();
   renderPlayers();
@@ -96,17 +140,13 @@ function renderPlayers() {
   playersDiv.innerHTML = '';
   players.forEach((p, i) => {
     const div = document.createElement('div');
-    div.className = 'bg-green-700 p-3 rounded-lg flex items-center gap-3 shadow-inner';
+    div.className = 'bg-slate-700 p-3 rounded-lg flex items-center gap-3 border border-slate-600 shadow-md hover:border-yellow-500 transition-colors';
     div.innerHTML = `
-      <input value="${p.name}" onchange="players[${i}].name=this.value;save()" class="text-black p-1 rounded w-32">
-      <select onchange="players[${i}].power=Number(this.value);save()" class="text-black p-1 rounded">
-        ${[1,2,3,4,5].map(v => `<option value="${v}" ${p.power==v?'selected':''}>⭐ ${v}</option>`).join('')}
-      </select>
-      <div class="text-xs flex gap-1">
-        <button onclick="setPos(${i},'GK')" class="bg-gray-800 p-1 rounded ${p.pos[0]=='GK'?'ring-2 ring-yellow-400':''}">KL</button>
-        <button onclick="setPos(${i},'DEF')" class="bg-gray-800 p-1 rounded ${p.pos[0]=='DEF'?'ring-2 ring-yellow-400':''}">DF</button>
-        <button onclick="setPos(${i},'MID')" class="bg-gray-800 p-1 rounded ${p.pos[0]=='MID'?'ring-2 ring-yellow-400':''}">OS</button>
-        <button onclick="setPos(${i},'FWD')" class="bg-gray-800 p-1 rounded ${p.pos[0]=='FWD'?'ring-2 ring-yellow-400':''}">FV</button>
+      <input value="${p.name}" onchange="players[${i}].name=this.value;save()" class="bg-slate-800 text-white p-2 rounded border border-slate-600 w-full focus:ring-1 focus:ring-yellow-500 outline-none">
+      <div class="flex gap-1 bg-slate-900 p-1 rounded-lg">
+        ${['GK','DEF','MID','FWD'].map(pos => `
+          <button onclick="setPos(${i},'${pos}')" class="text-[10px] w-8 h-8 rounded ${p.pos==pos?'bg-yellow-500 text-slate-900 font-bold':'bg-slate-700 text-slate-400'}">${pos}</button>
+        `).join('')}
       </div>
     `;
     playersDiv.appendChild(div);
@@ -114,69 +154,70 @@ function renderPlayers() {
 }
 
 function setPos(idx, pos) {
-  players[idx].pos = [pos];
+  players[idx].pos = pos;
   save();
   renderPlayers();
 }
 
 function createTeams() {
-  if (players.length === 0) return alert("Önce oyuncuları oluşturun.");
+  if (players.length === 0) return alert("Önce oyuncuları ekleyin kanka!");
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  const list = [...players].sort((a, b) => b.power - a.power);
-
-  let teamA = [], teamB = [], powerA = 0, powerB = 0;
+  let teamA = [], teamB = [];
 
   if (mode === 'one') {
-    teamA = list;
-    teamB = null;
+    teamA = [...players];
   } else {
-    // Yılan tipi dağıtımı (Snaking) ile güç dengesi sağla
-    list.forEach((p, index) => {
-      if (index % 2 === 0) { teamA.push(p); } 
-      else { teamB.push(p); }
+    // Rastgele değil, sırayla dağıtarak denge sağlıyoruz
+    players.forEach((p, idx) => {
+      if (idx % 2 === 0) teamA.push(p);
+      else teamB.push(p);
     });
   }
-
   drawField(teamA, teamB);
 }
 
 function drawField(teamA, teamB) {
   teamsDiv.innerHTML = '';
   const field = document.createElement('div');
-  field.className = 'field';
+  field.className = 'field shadow-2xl';
+  field.id = "tacticalField";
   
   field.innerHTML = `
     <div class="center-line"></div>
     <div class="center-circle"></div>
-    <div class="goal" style="left:0; border-right: 2px solid white;"></div>
-    <div class="goal" style="right:0; border-left: 2px solid white;"></div>
+    <div class="penalty-area-a"></div>
+    <div class="penalty-area-b"></div>
+    <div class="goal" style="left:-6px;"></div>
+    <div class="goal" style="right:-6px;"></div>
   `;
 
+  // Top
   const ball = document.createElement('div');
   ball.className = 'ball';
   ball.innerHTML = '⚽';
-  ball.style.top = '210px'; ball.style.left = '385px';
+  ball.style.top = '232px'; ball.style.left = '382px';
   makeDraggable(ball);
   field.appendChild(ball);
 
-  const yPositions = { GK: 200, DEF: 80, MID: 210, FWD: 340 };
+  const yBase = { GK: 220, DEF: 80, MID: 220, FWD: 360 };
 
-  // Team A yerleştirme (Sol Taraf)
+  // Takım A (Sol)
   teamA.forEach((p, i) => {
     const el = createPlayerEl(p, document.getElementById('colorA').value);
-    el.style.left = (p.pos[0] === 'GK' ? 30 : p.pos[0] === 'DEF' ? 120 : p.pos[0] === 'MID' ? 220 : 320) + 'px';
-    el.style.top = (yPositions[p.pos[0]] + (i * 5)) + 'px';
+    const xBase = { GK: 40, DEF: 140, MID: 240, FWD: 340 };
+    el.style.left = (xBase[p.pos] || 200) + 'px';
+    el.style.top = (yBase[p.pos] + (i * 10)) + 'px';
     makeDraggable(el);
     field.appendChild(el);
   });
 
-  // Team B yerleştirme (Sağ Taraf)
-  if (teamB) {
+  // Takım B (Sağ)
+  if (teamB.length > 0) {
     teamB.forEach((p, i) => {
       const el = createPlayerEl(p, document.getElementById('colorB').value);
-      // Sağ taraf için X eksenini ters çeviriyoruz
-      el.style.left = (p.pos[0] === 'GK' ? 730 : p.pos[0] === 'DEF' ? 630 : p.pos[0] === 'MID' ? 530 : 430) + 'px';
-      el.style.top = (yPositions[p.pos[0]] + (i * 5)) + 'px';
+      const xBase = { GK: 700, DEF: 600, MID: 500, FWD: 400 };
+      el.style.left = (xBase[p.pos] || 500) + 'px';
+      el.style.top = (yBase[p.pos] + (i * 10)) + 'px';
       makeDraggable(el);
       field.appendChild(el);
     });
@@ -187,56 +228,80 @@ function drawField(teamA, teamB) {
 
 function createPlayerEl(p, color) {
   const div = document.createElement('div');
-  div.className = 'player text-black';
+  div.className = 'player';
   div.textContent = p.name;
   div.style.backgroundColor = color;
   return div;
 }
 
 function makeDraggable(el) {
-  el.onmousedown = function(e) {
-    const field = el.parentElement;
-    let shiftX = e.clientX - el.getBoundingClientRect().left;
-    let shiftY = e.clientY - el.getBoundingClientRect().top;
+  let isDragging = false;
+  let startX, startY, initialX, initialY;
 
-    function moveAt(pageX, pageY) {
-      let x = pageX - shiftX - field.getBoundingClientRect().left;
-      let y = pageY - shiftY - field.getBoundingClientRect().top;
-      el.style.left = Math.max(0, Math.min(field.clientWidth - el.offsetWidth, x)) + 'px';
-      el.style.top = Math.max(0, Math.min(field.clientHeight - el.offsetHeight, y)) + 'px';
-    }
-
-    function onMouseMove(e) { moveAt(e.pageX, e.pageY); }
-    document.addEventListener('mousemove', onMouseMove);
-    document.onmouseup = function() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.onmouseup = null;
-    };
+  const onStart = (e) => {
+    isDragging = true;
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    
+    startX = clientX - el.offsetLeft;
+    startY = clientY - el.offsetTop;
+    el.style.transition = "none";
   };
-  el.ondragstart = () => false;
+
+  const onMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+    const parent = el.parentElement;
+    let newX = clientX - startX;
+    let newY = clientY - startY;
+
+    // Saha dışına çıkma engeli
+    newX = Math.max(0, Math.min(newX, parent.clientWidth - el.offsetWidth));
+    newY = Math.max(0, Math.min(newY, parent.clientHeight - el.offsetHeight));
+
+    el.style.left = newX + 'px';
+    el.style.top = newY + 'px';
+  };
+
+  const onEnd = () => {
+    isDragging = false;
+  };
+
+  el.addEventListener('mousedown', onStart);
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onEnd);
+
+  el.addEventListener('touchstart', onStart, { passive: false });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', onEnd);
 }
 
 function toggleVest() {
-  const cA = document.getElementById('colorA');
-  const cB = document.getElementById('colorB');
-  const temp = cA.value;
-  cA.value = cB.value;
-  cB.value = temp;
+  const a = document.getElementById('colorA');
+  const b = document.getElementById('colorB');
+  [a.value, b.value] = [b.value, a.value];
   createTeams();
 }
 
 function shareImage() {
-  html2canvas(document.querySelector(".field")).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'kadro.png';
-    link.href = canvas.toDataURL();
-    link.click();
+  const field = document.getElementById('tacticalField');
+  if (!field) return alert("Önce sahayı oluştur kanka!");
+  html2canvas(field).then(canvas => {
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL("image/png");
+    a.download = 'halisaha-taktik.png';
+    a.click();
   });
 }
 
 function clearCache() {
-  localStorage.clear();
-  location.reload();
+  if(confirm("Tüm veriler silinecek, emin misin?")) {
+    localStorage.clear();
+    location.reload();
+  }
 }
 </script>
 </body>
