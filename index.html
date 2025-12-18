@@ -160,17 +160,18 @@ function createTeams() {
   const list = [...players].sort((a, b) => b.power - a.power);
 
   let a = [], b = [], pa = 0, pb = 0;
+
   if (mode === 'one') {
     a = autoPositions(list);
-    console.log("Takım A (Tek Takım):", a); // Takım A'yı kontrol et
+    console.log("Takım A (Tek Takım):", a);
   } else {
     list.forEach(p => {
       if (pa <= pb) { a.push(p); pa += +p.power; } else { b.push(p); pb += +p.power; }
     });
     a = autoPositions(a);
     b = autoPositions(b);
-    console.log("Takım A:", a); // Takım A'yı kontrol et
-    console.log("Takım B:", b); // Takım B'yi kontrol et
+    console.log("Takım A:", a); 
+    console.log("Takım B:", b); 
   }
 
   drawField(a, b);
