@@ -42,28 +42,7 @@ input, select { padding:6px; border-radius:4px; border:none; margin:2px; }
 <h4>Oyuncu Sayısı</h4>
 <select id="playerCount">
   <option value="">Seç</option>
-  <option value="1">1</option>
-  <option value="2">2</option>
-  <option value="3">3</option>
-  <option value="4">4</option>
-  <option value="5">5</option>
-  <option value="6">6</option>
-  <option value="7">7</option>
-  <option value="8">8</option>
-  <option value="9">9</option>
-  <option value="10">10</option>
-  <option value="11">11</option>
-  <option value="12">12</option>
-  <option value="13">13</option>
-  <option value="14">14</option>
-  <option value="15">15</option>
-  <option value="16">16</option>
-  <option value="17">17</option>
-  <option value="18">18</option>
-  <option value="19">19</option>
-  <option value="20">20</option>
-  <option value="21">21</option>
-  <option value="22">22</option>
+  ${[...Array(22)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}
 </select>
 <button onclick="generatePlayers()">Oyuncuları Oluştur</button>
 <button onclick="clearCache()">🧹 Cache Temizle</button>
@@ -126,14 +105,10 @@ function renderPlayers(){
       <div class="player">
         <input value="${p.name}" onchange="players[${i}].name=this.value;save()">
         
-        <label><input type="checkbox" ${p.pos.includes('GK')?'checked':''}
-          onchange="togglePos(${i},'GK')"> GK</label>
-        <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''}
-          onchange="togglePos(${i},'DEF')"> DEF</label>
-        <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''}
-          onchange="togglePos(${i},'MID')"> MID</label>
-        <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''}
-          onchange="togglePos(${i},'FWD')"> FWD</label>
+        <label><input type="checkbox" ${p.pos.includes('GK')?'checked':''} onchange="togglePos(${i},'GK')"> GK</label>
+        <label><input type="checkbox" ${p.pos.includes('DEF')?'checked':''} onchange="togglePos(${i},'DEF')"> DEF</label>
+        <label><input type="checkbox" ${p.pos.includes('MID')?'checked':''} onchange="togglePos(${i},'MID')"> MID</label>
+        <label><input type="checkbox" ${p.pos.includes('FWD')?'checked':''} onchange="togglePos(${i},'FWD')"> FWD</label>
 
         <select onchange="players[${i}].power=this.value;save()">
           <option ${p.power==1?'selected':''}>1</option>
@@ -159,6 +134,21 @@ function toggleVest(){
   createTeams();
 }
 
+/* OTOMATİK POZİSYON ATAMA */
+function autoPositions(team){
+  const n = team.length;
+  let gk=1, def=3, mid=1, fwd=2;
+  if(n===6){ gk=1; def=3; mid=2; fwd=1; }
+  if(n<6){ gk=1; def=Math.min(3,n-3); mid=1; fwd=n-(gk+def+mid); }
+  let idx=0;
+  team.forEach(p=>p.pos=[]);
+  for(let i=0;i<gk;i++) team[idx++].pos.push('GK');
+  for(let i=0;i<def;i++) team[idx++].pos.push('DEF');
+  for(let i=0;i<mid;i++) team[idx++].pos.push('MID');
+  for(let i=0;i<fwd;i++) team[idx++].pos.push('FWD');
+  return team;
+}
+
 /* TAKIM OLUŞTUR */
 function createTeams(){
   if(players.length===0) return alert("Oyuncu yok");
@@ -167,7 +157,8 @@ function createTeams(){
   const list=[...players].sort((a,b)=>b.power-a.power);
 
   if(mode==='one'){
-    teamsDiv.innerHTML = teamHTML('Bizim Takım', list, false, colorA.value);
+    const team=autoPositions(list);
+    teamsDiv.innerHTML = teamHTML('Bizim Takım', team, false, colorA.value);
     enableDrag(); return;
   }
 
@@ -176,6 +167,9 @@ function createTeams(){
     if(pa<=pb){ a.push(p); pa+=+p.power; }
     else{ b.push(p); pb+=+p.power; }
   });
+
+  a=autoPositions(a);
+  b=autoPositions(b);
 
   teamsDiv.innerHTML =
     teamHTML('Takım A', a, vestTeam===1, colorA.value) +
