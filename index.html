@@ -162,12 +162,15 @@ function createTeams() {
   let a = [], b = [], pa = 0, pb = 0;
   if (mode === 'one') {
     a = autoPositions(list);
+    console.log("Takım A (Tek Takım):", a); // Takım A'yı kontrol et
   } else {
     list.forEach(p => {
       if (pa <= pb) { a.push(p); pa += +p.power; } else { b.push(p); pb += +p.power; }
     });
     a = autoPositions(a);
     b = autoPositions(b);
+    console.log("Takım A:", a); // Takım A'yı kontrol et
+    console.log("Takım B:", b); // Takım B'yi kontrol et
   }
 
   drawField(a, b);
@@ -205,7 +208,7 @@ function drawField(teamA, teamB) {
   field.appendChild(ball);
 
   const rows = { GK: 0, DEF: 120, MID: 210, FWD: 300 };
-  
+
   // Takım A
   if (teamA) {
     teamA.forEach(p => {
