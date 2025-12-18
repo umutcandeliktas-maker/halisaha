@@ -131,18 +131,26 @@ function toggleVest() {
 
 function autoPositions(team) {
   const n = team.length;
-  let gk = 1, def = 3, mid = 1, fwd = 2;
+  let gk = 1, def = 3, mid = 2, fwd = 2;
+  
   if (n === 6) { gk = 1; def = 3; mid = 2; fwd = 1; }
-  if (n < 6) { gk = 1; def = Math.min(3, n - 3); mid = 1; fwd = n - (gk + def + mid); }
+  if (n < 6) { gk = 1; def = Math.min(3, n - 3); mid = 2; fwd = n - (gk + def + mid); }
 
   let idx = 0;
   team.forEach(p => p.pos = []);
-  
+
+  // Kaleci
   for (let i = 0; i < gk; i++) team[idx++].pos.push('GK');
+
+  // Defans
   for (let i = 0; i < def; i++) team[idx++].pos.push('DEF');
+
+  // Orta Saha
   for (let i = 0; i < mid; i++) team[idx++].pos.push('MID');
+
+  // Forvet
   for (let i = 0; i < fwd; i++) team[idx++].pos.push('FWD');
-  
+
   return team;
 }
 
@@ -196,8 +204,10 @@ function drawField(teamA, teamB) {
   makeDraggable(ball);
   field.appendChild(ball);
 
+  const rows = { GK: 0, DEF: 120, MID: 210, FWD: 300 };
+  
+  // Takım A
   if (teamA) {
-    const rows = { GK: 0, DEF: 120, MID: 210, FWD: 300 };
     teamA.forEach(p => {
       const player = document.createElement('div');
       player.className = 'player bg-yellow-500 text-black';
@@ -211,8 +221,8 @@ function drawField(teamA, teamB) {
     });
   }
 
+  // Takım B
   if (teamB) {
-    const rows = { GK: 0, DEF: 120, MID: 210, FWD: 300 };
     teamB.forEach(p => {
       const player = document.createElement('div');
       player.className = 'player bg-cyan-500 text-black';
