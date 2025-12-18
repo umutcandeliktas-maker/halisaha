@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Halısaha Takım Kurucu</title>
+<title>Mini Halı Saha Takım Kurucu</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-green-900 text-white font-sans">
 
-<header class="bg-green-700 text-center text-xl font-bold py-4">⚽ Halısaha Takım Kurucu</header>
+<header class="bg-green-700 text-center text-xl font-bold py-4">⚽ Mini Halı Saha Takım Kurucu</header>
 
 <div class="container mx-auto p-4">
 
@@ -43,13 +43,13 @@
   <label>Takım B: <input type="color" id="colorB" value="#0dcaf0"></label>
 </div>
 
-<!-- Takımlar -->
-<div id="teams"></div>
+<!-- Mini Saha -->
+<div id="teams" class="relative mx-auto w-full max-w-3xl" style="height:400px;"></div>
 
 </div>
 
 <script>
-// ======= LISTE DOLDUR =======
+// ====== Liste Kutusu ======
 document.addEventListener('DOMContentLoaded', ()=>{
   const playerCountSelect = document.getElementById('playerCount');
   for(let i=1;i<=22;i++){
@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       playerCountSelect.appendChild(option);
   }
 
-  // Daha önce kaydedilmiş oyuncular varsa yükle
   if(localStorage.getItem('players')){
     players = JSON.parse(localStorage.getItem('players'));
     renderPlayers();
@@ -67,13 +66,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 // ======= GLOBAL =======
+let players = [];
+let vestTeam = 1;
+
 const playersDiv = document.getElementById('players');
 const teamsDiv = document.getElementById('teams');
 const colorA = document.getElementById('colorA');
 const colorB = document.getElementById('colorB');
-
-let players = [];
-let vestTeam = 1;
 
 // ======= LOCAL STORAGE =======
 function save(){ localStorage.setItem('players', JSON.stringify(players)); }
@@ -147,68 +146,80 @@ function createTeams(){
   const mode=document.querySelector('input[name="mode"]:checked').value;
   const list=[...players].sort((a,b)=>b.power-a.power);
 
+  let a=[], b=[], pa=0, pb=0;
   if(mode==='one'){
-    const team=autoPositions(list);
-    teamsDiv.innerHTML = teamHTML('Bizim Takım', team, false, colorA.value);
-    enableDrag(); return;
+    a = autoPositions(list);
+  } else {
+    list.forEach(p=>{
+      if(pa<=pb){ a.push(p); pa+=+p.power; } else { b.push(p); pb+=+p.power; }
+    });
+    a = autoPositions(a);
+    b = autoPositions(b);
   }
 
-  let a=[], b=[], pa=0, pb=0;
-  list.forEach(p=>{
-    if(pa<=pb){ a.push(p); pa+=+p.power; } else { b.push(p); pb+=+p.power; }
-  });
-
-  a=autoPositions(a);
-  b=autoPositions(b);
-
-  teamsDiv.innerHTML =
-    teamHTML('Takım A', a, vestTeam===1, colorA.value) +
-    teamHTML('Takım B', b, vestTeam===2, colorB.value);
-
-  enableDrag();
+  drawField(a,b);
 }
 
-// ======= SAHA + MEVKİ =======
-function teamHTML(title, team, vest, color){
-  const lines={GK:[],DEF:[],MID:[],FWD:[]};
-  team.forEach(p=>{
-    const pos = p.pos[0] || 'FWD';
-    lines[pos].push(p);
-  });
+// ======= SAHA ÇİZİM =======
+function drawField(teamA, teamB){
+  teamsDiv.innerHTML='';
 
-  let html=`<h3 class="text-center text-lg font-bold mt-4">${vest?'🦺 ':''}${title}</h3>
-  <div class="field bg-green-800 border-2 border-white rounded p-4 mb-4 flex flex-col items-center min-h-[250px]">`;
+  const field = document.createElement('div');
+  field.className='relative bg-green-800 border-4 border-white rounded w-full h-[400px] mx-auto';
+  
+  // Santra çizgisi
+  const centerLine = document.createElement('div');
+  centerLine.className='absolute top-1/2 left-0 w-full border-t-2 border-white';
+  field.appendChild(centerLine);
 
-  ['GK','DEF','MID','FWD'].forEach(l=>{
-    if(lines[l].length){
-      html+=`<div class="line flex justify-center gap-4 my-1 flex-wrap">`;
-      lines[l].forEach(p=>{
-        html+=`<div class="card bg-white text-black p-2 rounded border-2 min-w-[60px] text-center" draggable="true">
-          <div class="name font-bold">${p.name}</div>
-          <div class="pos text-sm">${l} ⭐${p.power}</div>
-        </div>`;
+  // Kale alanları
+  const goalA = document.createElement('div');
+  goalA.className='absolute top-[50%] -translate-y-1/2 left-0 w-10 h-24 bg-white/50 border-2 border-white';
+  field.appendChild(goalA);
+
+  const goalB = document.createElement('div');
+  goalB.className='absolute top-[50%] -translate-y-1/2 right-0 w-10 h-24 bg-white/50 border-2 border-white';
+  field.appendChild(goalB);
+
+  // Takım A
+  if(teamA){
+    const positions = ['GK','DEF','MID','FWD'];
+    positions.forEach((pos,i)=>{
+      const line = document.createElement('div');
+      line.className='absolute flex justify-center w-full';
+      const top = 20 + i*60; // yatay pozisyon
+      line.style.top = top + 'px';
+      teamA.filter(p=>p.pos[0]===pos).forEach((p,j)=>{
+        const player = document.createElement('div');
+        player.className='absolute bg-yellow-500 text-black p-1 rounded text-xs text-center';
+        player.textContent=p.name;
+        player.style.left = (50 + j*60) + 'px';
+        line.appendChild(player);
       });
-      html+=`</div>`;
-    }
-  });
-
-  html+='</div>';
-  return html;
-}
-
-// ======= DRAG & DROP =======
-function enableDrag(){
-  document.querySelectorAll('.card').forEach(c=>{
-    c.addEventListener('dragstart',()=>c.classList.add('dragging'));
-    c.addEventListener('dragend',()=>c.classList.remove('dragging'));
-  });
-  document.querySelectorAll('.line').forEach(l=>{
-    l.addEventListener('dragover',e=>{
-      e.preventDefault();
-      const d=document.querySelector('.dragging');
-      if(d) l.appendChild(d);
+      field.appendChild(line);
     });
-  });
+  }
+
+  // Takım B
+  if(teamB){
+    const positions = ['GK','DEF','MID','FWD'];
+    positions.forEach((pos,i)=>{
+      const line = document.createElement('div');
+      line.className='absolute flex justify-center w-full';
+      const top = 20 + i*60;
+      line.style.top = top + 'px';
+      teamB.filter(p=>p.pos[0]===pos).forEach((p,j)=>{
+        const player = document.createElement('div');
+        player.className='absolute bg-cyan-500 text-black p-1 rounded text-xs text-center';
+        player.textContent=p.name;
+        player.style.right = (50 + j*60) + 'px';
+        line.appendChild(player);
+      });
+      field.appendChild(line);
+    });
+  }
+
+  teamsDiv.appendChild(field);
 }
 
 // ======= RESİM İNDİR =======
@@ -230,7 +241,6 @@ function clearCache(){
   teamsDiv.innerHTML='';
   alert('Cache temizlendi');
 }
-
 </script>
 </body>
 </html>
