@@ -32,8 +32,12 @@ input, select { padding:6px; border-radius:4px; border:none; margin:2px; }
 
 <div class="container">
 
-<input id="singlePlayerName" placeholder="Oyuncu İsmi">
-<button onclick="addPlayer()">Oyuncu Ekle</button>
+<h4>Oyuncu Sayısı Seç</h4>
+<select id="playerCount">
+  <option value="">Seç</option>
+  ${Array.from({length:22},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}
+</select>
+<button onclick="generatePlayers()">Oyuncuları Oluştur</button>
 
 <hr>
 <div id="players"></div>
@@ -50,8 +54,8 @@ input, select { padding:6px; border-radius:4px; border:none; margin:2px; }
 <button onclick="shareImage()">📸 Resim İndir</button>
 
 <div style="margin:10px 0;">
-  <label>A Renk <input type="color" id="colorA" value="#ffc107"></label>
-  <label>B Renk <input type="color" id="colorB" value="#0dcaf0"></label>
+  <label>Takım A <input type="color" id="colorA" value="#ffc107"></label>
+  <label>Takım B <input type="color" id="colorB" value="#0dcaf0"></label>
 </div>
 
 <div id="teams"></div>
@@ -63,56 +67,53 @@ const playersDiv = document.getElementById('players');
 const teamsDiv = document.getElementById('teams');
 const colorA = document.getElementById('colorA');
 const colorB = document.getElementById('colorB');
-const nameInput = document.getElementById('singlePlayerName');
+const countSelect = document.getElementById('playerCount');
 
 let players = [];
 let vestTeam = 1;
 
-/* OYUNCULAR */
-function renderPlayers() {
-  playersDiv.innerHTML = '';
+/* OYUNCU OLUŞTUR */
+function generatePlayers(){
+  const count = Number(countSelect.value);
+  if(!count) return alert("Oyuncu sayısı seç");
+
+  players = [];
+  for(let i=1;i<=count;i++){
+    players.push({ name:`Oyuncu ${i}`, power:3 });
+  }
+  renderPlayers();
+  teamsDiv.innerHTML='';
+}
+
+/* OYUNCU LİSTESİ */
+function renderPlayers(){
+  playersDiv.innerHTML='';
   players.forEach((p,i)=>{
-    playersDiv.innerHTML += `
+    playersDiv.innerHTML+=`
       <div class="player">
         <input value="${p.name}" onchange="players[${i}].name=this.value">
         <select onchange="players[${i}].power=this.value">
           ${[1,2,3,4,5].map(n=>`<option ${p.power==n?'selected':''}>${n}</option>`).join('')}
         </select>
-        <button onclick="removePlayer(${i})">❌</button>
       </div>
     `;
   });
 }
 
-function addPlayer() {
-  let n = nameInput.value.trim();
-  if(!n) n = `Oyuncu ${players.length+1}`;
-  players.push({name:n, power:3});
-  nameInput.value='';
-  renderPlayers();
-}
-
-function removePlayer(i){
-  players.splice(i,1);
-  renderPlayers();
-}
-
-/* TAKIM OLUŞTURMA */
+/* YELEK */
 function toggleVest(){
-  vestTeam = vestTeam === 1 ? 2 : 1;
+  vestTeam = vestTeam===1 ? 2 : 1;
   createTeams();
 }
 
+/* TAKIM OLUŞTUR */
 function createTeams(){
-  if(players.length === 0){
-    alert("Önce oyuncu ekle kankam 😄");
-    return;
-  }
+  if(players.length===0) return alert("Önce oyuncu oluştur");
 
-  const mode = document.querySelector('input[name="mode"]:checked').value;
-  const sorted = [...players].sort((a,b)=>b.power-a.power);
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  const sorted=[...players].sort((a,b)=>b.power-a.power);
 
-  if(mode === 'one'){
+  if(mode==='one'){
     teamsDiv.innerHTML = teamHTML('Bizim Takım', sorted, false, colorA.value);
     enableDrag();
     return;
@@ -131,6 +132,7 @@ function createTeams(){
   enableDrag();
 }
 
+/* HTML */
 function teamHTML(title, team, vest, color){
   return `
     <h3>${vest?'🦺 ':''}${title}</h3>
@@ -152,7 +154,6 @@ function enableDrag(){
     c.addEventListener('dragstart',()=>c.classList.add('dragging'));
     c.addEventListener('dragend',()=>c.classList.remove('dragging'));
   });
-
   document.querySelectorAll('.line').forEach(line=>{
     line.addEventListener('dragover',e=>{
       e.preventDefault();
@@ -162,21 +163,16 @@ function enableDrag(){
   });
 }
 
-/* RESİM İNDİR */
+/* RESİM */
 function shareImage(){
-  if(!teamsDiv.innerHTML){
-    alert("Önce takım oluştur");
-    return;
-  }
+  if(!teamsDiv.innerHTML) return alert("Önce takım oluştur");
   html2canvas(teamsDiv).then(canvas=>{
     const a=document.createElement('a');
     a.href=canvas.toDataURL('image/png');
-    a.download='halisaha-takim.png';
+    a.download='halisaha-takimlar.png';
     a.click();
   });
 }
-
-renderPlayers();
 </script>
 
 </body>
