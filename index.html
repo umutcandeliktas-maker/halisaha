@@ -2,39 +2,38 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Taktik Pro v9.0 - Final Master</title>
+  <title>Taktik Pro v10.0 - Full Paket</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .field-container { position: relative; margin: 20px auto; width: fit-content; padding: 20px; }
+    .field-container { position: relative; margin: 20px auto; width: fit-content; padding: 10px; }
     .field {
-      position: relative;
-      width: 1100px; height: 650px;
-      background-color: #1a8a42;
-      border: 5px solid white; border-radius: 12px;
-      overflow: hidden;
-      resize: both;
-      min-width: 800px; min-height: 500px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      position: relative; width: 1100px; height: 650px; background-color: #12632b;
+      border: 5px solid white; border-radius: 15px; overflow: hidden; resize: both;
+      min-width: 900px; min-height: 550px; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
     }
-    .field::after { content: "📐 Sahayı Buradan Büyüt"; position: absolute; bottom: 8px; right: 12px; color: rgba(255,255,255,0.4); font-size: 12px; pointer-events: none; }
-    .line { position: absolute; background: rgba(255,255,255,0.8); }
+    /* Saha Çizgileri */
+    .line { position: absolute; background: rgba(255,255,255,0.7); }
     .center-line { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
     .center-circle { top: 50%; left: 50%; width: 140px; height: 140px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
-    .goal-post { position: absolute; top: 50%; transform: translateY(-50%); width: 45px; height: 180px; border: 4px solid white; background: rgba(255,255,255,0.1); z-index: 2; }
+    .goal-post { position: absolute; top: 50%; transform: translateY(-50%); width: 45px; height: 180px; border: 4px solid white; background: rgba(255,255,255,0.1); }
     .goal-l { left: -5px; border-left: none; }
     .goal-r { right: -5px; border-right: none; }
-    .pen-box { position: absolute; border: 2px solid white; top: 50%; transform: translateY(-50%); height: 380px; width: 150px; }
+    .pen-box { position: absolute; border: 2px solid white; top: 50%; transform: translateY(-50%); height: 380px; width: 160px; }
     
+    /* Oyuncu ve Yelek Stili */
     .player {
       position: absolute; width: 115px; padding: 10px 5px; border-radius: 20px;
       font-weight: bold; color: black; cursor: grab; z-index: 10; text-align: center;
       border: 2px solid rgba(0,0,0,0.3); user-select: none; font-size: 13px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4); transform: translate(-50%, -50%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform: translate(-50%, -50%);
     }
-    .player .quality-badge { font-size: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; padding: 1px 4px; display: block; margin-top: 2px; }
-    .player.selected { outline: 4px solid gold; box-shadow: 0 0 25px gold; z-index: 100; }
+    .yelekli { 
+      background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.3) 10px, rgba(255,255,255,0.3) 20px) !important;
+      border: 3px solid gold !important;
+    }
+    .player .q-tag { font-size: 10px; opacity: 0.8; display: block; margin-top: 2px; }
+    .player.selected { outline: 4px solid gold; z-index: 100; }
     .ball {
       position: absolute; width: 40px; height: 40px; background: white; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; z-index: 60;
@@ -45,24 +44,22 @@
 </head>
 <body class="bg-slate-900 text-white font-sans">
 
-<header class="bg-slate-800 text-center py-6 border-b-4 border-green-600 shadow-xl">
-  <h1 class="text-3xl font-black italic tracking-tighter uppercase">⚽ Taktik Pro v9.0 Master</h1>
+<header class="bg-slate-800 text-center py-5 border-b-4 border-green-600 shadow-xl">
+  <h1 class="text-3xl font-black italic tracking-tighter">⚽ TAKTİK PRO v10.0 MASTER</h1>
 </header>
 
 <div class="container mx-auto p-4">
-  <div class="bg-slate-800 p-6 rounded-2xl mb-8 flex flex-wrap gap-6 items-center justify-between border border-slate-700 shadow-2xl">
-    <div class="flex items-center gap-4">
-      <div class="flex flex-col">
-        <label class="text-xs text-slate-400 font-bold mb-1 ml-1">KİŞİ SAYISI</label>
-        <select id="pCount" class="bg-slate-700 p-3 rounded-xl outline-none border border-slate-600 font-bold text-green-400 w-44"></select>
-      </div>
-      <button onclick="initPlayers()" class="mt-5 bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 transition-all active:scale-95">KADRO OLUŞTUR</button>
-      <button onclick="clearCache()" class="mt-5 bg-red-600/20 text-red-500 px-6 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all">Sıfırla</button>
+  <div class="bg-slate-800 p-6 rounded-2xl mb-8 flex flex-wrap gap-4 items-center justify-between border border-slate-700">
+    <div class="flex items-center gap-3">
+      <select id="pCount" class="bg-slate-700 p-3 rounded-xl border border-slate-600 font-bold text-green-400 w-32"></select>
+      <button onclick="initPlayers()" class="bg-indigo-600 px-5 py-3 rounded-xl font-bold hover:bg-indigo-500">KADRO OLUŞTUR</button>
+      <button onclick="resetApp()" class="bg-red-600/20 text-red-500 px-5 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white">SIFIRLA</button>
     </div>
     
-    <div class="flex gap-4">
-      <button onclick="drawTactics()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-black shadow-lg hover:scale-105 active:scale-95 transition-all">🏟️ SAHAYA DİZ</button>
-      <button onclick="saveField()" class="bg-green-600 px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-all shadow-lg">📸 RESMİ KAYDET</button>
+    <div class="flex gap-3">
+      <button onclick="assignYelek()" class="bg-pink-600 px-6 py-3 rounded-full font-bold hover:bg-pink-500 shadow-lg">🎽 YELEK SEÇ</button>
+      <button onclick="drawTactics()" class="bg-yellow-500 text-black px-10 py-3 rounded-full font-black shadow-lg hover:scale-105 active:scale-95 transition-all">🏟️ SAHAYA DİZ</button>
+      <button onclick="saveField()" class="bg-green-600 px-6 py-3 rounded-full font-bold hover:bg-green-500">📸 KAYDET</button>
     </div>
   </div>
 
@@ -83,29 +80,18 @@
 
 <script>
 let squad = [];
-const KEY = 'taktik_pro_v9_master';
-const SAFE_DIST = 95; // Çarpışma engelleme mesafesi
+const KEY = 'taktik_pro_v10';
+const SAFE_DIST = 95;
 
-// Tam Görsel Koordinatları (%)
-const layoutA = { 
-  GK: [{x:8, y:50}], 
-  DEF: [{x:22, y:50}, {x:25, y:20}, {x:25, y:80}], 
-  MID: [{x:38, y:35}, {x:38, y:65}], 
-  FWD: [{x:48, y:50}] 
-};
-
-const layoutB = { 
-  GK: [{x:92, y:50}], 
-  DEF: [{x:78, y:20}, {x:78, y:80}], 
-  MID: [{x:65, y:30}, {x:65, y:50}, {x:65, y:70}], 
-  FWD: [{x:55, y:50}] 
-};
+// Görseldeki Tam Hizalı Koordinatlar (%)
+const layoutA = { GK:[{x:8,y:50}], DEF:[{x:22,y:50},{x:24,y:20},{x:24,y:80}], MID:[{x:37,y:35},{x:37,y:65}], FWD:[{x:47,y:50}] };
+const layoutB = { GK:[{x:92,y:50}], DEF:[{x:78,y:25},{x:78,y:75}], MID:[{x:66,y:30},{x:66,y:50},{x:66,y:70}], FWD:[{x:56,y:50}] };
 
 document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('pCount');
   for (let i = 2; i <= 22; i+=2) {
     let o = document.createElement('option');
-    o.value = i; o.textContent = `${i} Oyuncu (${i/2}v${i/2})`;
+    o.value = i; o.textContent = `${i} Kişi`;
     if(i===14) o.selected = true;
     sel.appendChild(o);
   }
@@ -116,44 +102,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initPlayers() {
   const n = Number(document.getElementById('pCount').value);
-  squad = Array.from({length: n}, (_, i) => ({ 
-    id: i, 
-    name: `Oyuncu ${i+1}`, 
-    roles: [], 
-    quality: 5 
-  }));
+  squad = Array.from({length: n}, (_, i) => ({ id: i, name: `Oyuncu ${i+1}`, roles: [], quality: 5 }));
   save(); renderList();
 }
 
 function renderList() {
   const container = document.getElementById('playerList');
   container.innerHTML = squad.map((p, i) => `
-    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
       <div class="flex gap-2 mb-2">
-        <input onchange="squad[${i}].name=this.value; save();" value="${p.name}" class="bg-slate-900 text-white p-2 flex-grow rounded border border-slate-700 outline-none focus:border-indigo-500 text-sm">
-        <select onchange="squad[${i}].quality=Number(this.value); save();" class="bg-slate-900 text-yellow-500 font-bold p-1 rounded border border-slate-700 text-xs">
+        <input onchange="updatePlayer(${i},'name',this.value)" value="${p.name}" class="bg-slate-900 text-white p-2 flex-grow rounded text-sm outline-none border border-slate-700">
+        <select onchange="updatePlayer(${i},'quality',Number(this.value))" class="bg-slate-900 text-yellow-500 font-bold p-1 rounded text-xs">
           ${[1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}" ${p.quality==v?'selected':''}>⭐${v}</option>`).join('')}
         </select>
       </div>
       <div class="grid grid-cols-4 gap-1">
         ${['GK','DEF','MID','FWD'].map(r => `
-          <button onclick="toggleRole(${i},'${r}')" class="text-[9px] py-2 rounded font-black transition-all ${p.roles.includes(r)?'bg-indigo-600 text-white':'bg-slate-700 text-slate-400'}">${r}</button>
+          <button onclick="toggleRole(${i},'${r}')" class="text-[9px] py-1 rounded font-bold ${p.roles.includes(r)?'bg-indigo-600 text-white':'bg-slate-700 text-slate-400'}">${r}</button>
         `).join('')}
       </div>
     </div>
   `).join('');
 }
 
+function updatePlayer(i, key, val) { squad[i][key] = val; save(); }
 function toggleRole(i, r) {
   squad[i].roles.includes(r) ? squad[i].roles = squad[i].roles.filter(x=>x!==r) : squad[i].roles.push(r);
   save(); renderList();
 }
 
+function assignYelek() {
+  const isTeamA = Math.random() > 0.5;
+  document.querySelectorAll('.player').forEach((el, idx) => {
+    el.classList.remove('yelekli');
+    if(isTeamA && idx < squad.length/2) el.classList.add('yelekli');
+    if(!isTeamA && idx >= squad.length/2) el.classList.add('yelekli');
+  });
+  alert(isTeamA ? "Turuncu Takım Yelek Giyiyor!" : "Mavi Takım Yelek Giyiyor!");
+}
+
 function drawTactics() {
   const f = document.getElementById('field');
   f.querySelectorAll('.player').forEach(p => p.remove());
-  document.getElementById('ball').style.left = "50%";
-  document.getElementById('ball').style.top = "50%";
+  document.getElementById('ball').style.left = "50%"; document.getElementById('ball').style.top = "50%";
 
   const teamA = squad.slice(0, squad.length/2);
   const teamB = squad.slice(squad.length/2);
@@ -164,24 +155,23 @@ function drawTactics() {
       const el = document.createElement('div');
       el.className = 'player';
       el.style.backgroundColor = color;
-      el.innerHTML = `<div>${p.name}</div><div class="quality-badge">Kalite: ${p.quality}/10</div>`;
+      el.innerHTML = `<div>${p.name}</div><span class="q-tag">Kalite: ${p.quality}/10</span>`;
       
       let role = p.roles[0] || (counts.GK<1?'GK': counts.DEF<3?'DEF': counts.MID<3?'MID': 'FWD');
-      let posBase = config[role] ? config[role][counts[role] % config[role].length] : {x:50, y:50};
+      let pos = config[role] ? config[role][counts[role] % config[role].length] : {x:50, y:50};
       
-      // Üst üste binmeyi engellemek için ufak dinamik kaydırma
-      let drift = counts[role] > 0 ? (counts[role] * 3) : 0;
-      el.style.left = `calc(${posBase.x}% + ${drift}px)`;
-      el.style.top = `calc(${posBase.y}% + ${drift}px)`;
+      // Üst üste binme önleyici (dizilirken)
+      let offset = counts[role] > 0 ? (counts[role] * 5) : 0;
+      el.style.left = `calc(${pos.x}% + ${offset}px)`;
+      el.style.top = pos.y + "%";
       
       counts[role]++;
       drag(el);
       f.appendChild(el);
     });
   };
-
-  place(teamA, layoutA, '#f3a616'); // Turuncu
-  place(teamB, layoutB, '#43d1f0'); // Mavi
+  place(teamA, layoutA, '#f3a616');
+  place(teamB, layoutB, '#43d1f0');
 }
 
 function drag(el) {
@@ -221,11 +211,11 @@ function drag(el) {
 }
 
 function save() { localStorage.setItem(KEY, JSON.stringify(squad)); }
-function clearCache() { if(confirm("Tüm oyuncular ve ayarlar sıfırlansın mı?")) { localStorage.removeItem(KEY); location.reload(); } }
+function resetApp() { if(confirm("Her şey sıfırlansın mı?")) { localStorage.clear(); location.reload(); } }
 function saveField() {
-  html2canvas(document.getElementById('field'), {backgroundColor:'#1a8a42'}).then(canvas => {
+  html2canvas(document.getElementById('field'), {backgroundColor:'#12632b'}).then(canvas => {
     const link = document.createElement('a');
-    link.download = 'taktik-pro-v9.png';
+    link.download = 'taktik-pro-v10.png';
     link.href = canvas.toDataURL();
     link.click();
   });
