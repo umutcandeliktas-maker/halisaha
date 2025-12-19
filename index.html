@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Taktik Pro v10.7 - True Random</title>
+  <title>Taktik Pro v10.8 - Manuel Kontrol</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -40,7 +40,7 @@
 <body class="bg-slate-900 text-white font-sans">
 
 <header class="bg-slate-800 text-center py-5 border-b-4 border-green-600 shadow-xl">
-  <h1 class="text-3xl font-black italic tracking-tighter uppercase">⚽ TAKTİK PRO v10.7 TRUE RANDOM</h1>
+  <h1 class="text-3xl font-black italic tracking-tighter uppercase">⚽ TAKTİK PRO v10.8 FINAL CONTROL</h1>
 </header>
 
 <div class="container mx-auto p-4">
@@ -54,8 +54,9 @@
           <option value="16">16 Kişi</option>
         </select>
       </div>
-      <button onclick="generateRandomSquad()" class="mt-4 bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 shadow-lg active:scale-95 transition-all">🎲 HER SEFERİNDE FARKLI KUR</button>
-      <button onclick="drawTactics()" class="mt-4 bg-yellow-500 text-black px-8 py-3 rounded-xl font-black hover:bg-yellow-400 shadow-lg active:scale-95 transition-all">🏟️ SAHAYA OTURT</button>
+      <button onclick="createList()" class="mt-4 bg-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-500 shadow-lg active:scale-95 transition-all text-sm">1. LİSTEYİ HAZIRLA</button>
+      <button onclick="shuffleTeams()" class="mt-4 bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 shadow-lg active:scale-95 transition-all text-sm">2. TAKIMLARI KARMA</button>
+      <button onclick="drawTactics()" class="mt-4 bg-yellow-500 text-black px-6 py-3 rounded-xl font-black hover:bg-yellow-400 shadow-lg active:scale-95 transition-all text-sm">3. SAHAYA OTURT</button>
     </div>
     
     <div class="flex gap-3">
@@ -81,53 +82,49 @@
 
 <script>
 let squad = [];
-const KEY = 'taktik_pro_v10_7';
+const KEY = 'taktik_pro_v10_8';
 const COLORS = { A: '#f3a616', B: '#43d1f0' };
-const NAMES = ["Ahmet", "Mehmet", "Can", "Mert", "Ali", "Veli", "Burak", "Serkan", "Emre", "Arda", "Ozan", "Deniz", "Ege", "Kaan", "Yiğit", "Sarp", "Bora", "Umut"];
 
 const layoutA = { GK: [{x:8,y:50}], DEF: [{x:22,y:50},{x:24,y:22},{x:24,y:78}], MID: [{x:37,y:35},{x:37,y:65}], FWD: [{x:47,y:50}] };
 const layoutB = { GK: [{x:92,y:50}], DEF: [{x:78,y:25},{x:78,y:75}], MID: [{x:66,y:30},{x:66,y:50},{x:66,y:70}], FWD: [{x:56,y:50}] };
 
-function generateRandomSquad() {
+function createList() {
   const n = Number(document.getElementById('pCount').value);
-  const shuffledNames = [...NAMES].sort(() => Math.random() - 0.5);
-  
-  // Önce oyuncu havuzunu oluştur
-  let newSquad = Array.from({length: n}, (_, i) => ({
+  squad = Array.from({length: n}, (_, i) => ({
     id: i,
-    name: shuffledNames[i] || `Oyuncu ${i+1}`,
-    quality: Math.floor(Math.random() * 5) + 5, // 5-10 arası kalite
-    team: '',
-    role: ''
+    name: `Oyuncu ${i+1}`,
+    quality: 5,
+    team: i < n/2 ? 'A' : 'B',
+    role: 'DEF'
   }));
+  renderList();
+}
 
-  // Takımları rastgele karıştırarak dağıt
-  let indices = Array.from({length: n}, (_, i) => i).sort(() => Math.random() - 0.5);
+function shuffleTeams() {
+  if(squad.length === 0) return alert("Önce listeyi hazırla!");
+  let indices = squad.map((_, i) => i).sort(() => Math.random() - 0.5);
   indices.forEach((idx, order) => {
-    const isTeamA = order < n/2;
-    newSquad[idx].team = isTeamA ? 'A' : 'B';
-    const tOrder = isTeamA ? order : order - (n/2);
-    
-    // Pozisyonları mantıklı dağıt
-    if(tOrder === 0) newSquad[idx].role = 'GK';
-    else if(tOrder <= 3) newSquad[idx].role = 'DEF';
-    else if(tOrder <= 5) newSquad[idx].role = 'MID';
-    else newSquad[idx].role = 'FWD';
+    squad[idx].team = order < squad.length/2 ? 'A' : 'B';
   });
-
-  squad = newSquad;
-  save(); renderList(); drawTactics();
+  renderList();
+  drawTactics();
 }
 
 function renderList() {
   const container = document.getElementById('playerList');
   container.innerHTML = squad.map((p, i) => `
     <div class="bg-slate-800 p-3 rounded-xl border-l-4 ${p.team==='A'?'border-orange-500':'border-cyan-500'} shadow-md">
-      <div class="flex justify-between items-center mb-1">
-        <span class="font-bold">${p.name}</span>
-        <span class="text-yellow-500 text-xs">⭐${p.quality}</span>
+      <div class="flex gap-2 mb-2">
+        <input onchange="squad[${i}].name=this.value; drawTactics();" value="${p.name}" class="bg-slate-900 text-white p-2 flex-grow rounded text-xs outline-none border border-slate-700">
+        <select onchange="squad[${i}].quality=this.value; drawTactics();" class="bg-slate-900 text-yellow-500 font-bold p-1 rounded text-[10px]">
+          ${[1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}" ${p.quality==v?'selected':''}>⭐${v}</option>`).join('')}
+        </select>
       </div>
-      <div class="text-[10px] text-slate-400 uppercase font-black">${p.role} | Takım ${p.team}</div>
+      <div class="grid grid-cols-4 gap-1">
+        ${['GK','DEF','MID','FWD'].map(r => `
+          <button onclick="squad[${i}].role='${r}'; renderList(); drawTactics();" class="text-[9px] py-1 rounded font-bold ${p.role===r?'bg-green-600 text-white':'bg-slate-700 text-slate-400'}">${r}</button>
+        `).join('')}
+      </div>
     </div>
   `).join('');
 }
@@ -136,37 +133,32 @@ function drawTactics() {
   const f = document.getElementById('field');
   f.querySelectorAll('.player').forEach(p => p.remove());
   
-  const teams = { A: squad.filter(p => p.team === 'A'), B: squad.filter(p => p.team === 'B') };
+  let counts = { A_GK:0, A_DEF:0, A_MID:0, A_FWD:0, B_GK:0, B_DEF:0, B_MID:0, B_FWD:0 };
 
-  const place = (teamPlayers, config, teamKey) => {
-    let counts = { GK:0, DEF:0, MID:0, FWD:0 };
-    teamPlayers.forEach((p) => {
-      const el = document.createElement('div');
-      el.className = 'player';
+  squad.forEach((p) => {
+    const el = document.createElement('div');
+    el.className = 'player';
+    el.style.backgroundColor = COLORS[p.team];
+    el.innerHTML = `<div>${p.name}</div><span class="q-tag">⭐${p.quality} - ${p.role}</span>`;
+    
+    let config = p.team === 'A' ? layoutA : layoutB;
+    let posSet = config[p.role] || [{x:50,y:50}];
+    let currentIdx = counts[`${p.team}_${p.role}`];
+    let pos = posSet[currentIdx % posSet.length];
+    
+    el.style.left = (pos.x * 11) + "px";
+    el.style.top = (pos.y * 6.5) + "px";
+    
+    el.ondblclick = () => {
+      p.team = p.team === 'A' ? 'B' : 'A';
       el.style.backgroundColor = COLORS[p.team];
-      el.innerHTML = `<div>${p.name}</div><span class="q-tag">⭐${p.quality} - ${p.role}</span>`;
-      
-      let posSet = config[p.role] || [{x:50,y:50}];
-      let pos = posSet[counts[p.role] % posSet.length];
-      
-      el.style.left = (pos.x * 11) + "px";
-      el.style.top = (pos.y * 6.5) + "px";
-      
-      // Çift Tık Renk Değişimi
-      el.ondblclick = () => {
-        p.team = p.team === 'A' ? 'B' : 'A';
-        el.style.backgroundColor = COLORS[p.team];
-        save(); renderList();
-      };
-      
-      counts[p.role]++;
-      drag(el);
-      f.appendChild(el);
-    });
-  };
-
-  place(teams.A, layoutA, 'A');
-  place(teams.B, layoutB, 'B');
+      renderList();
+    };
+    
+    counts[`${p.team}_${p.role}`]++;
+    drag(el);
+    f.appendChild(el);
+  });
 }
 
 function drag(el) {
@@ -193,8 +185,7 @@ function drag(el) {
   window.addEventListener('mouseup', evEnd);
 }
 
-function save() { localStorage.setItem(KEY, JSON.stringify(squad)); }
-function resetApp() { localStorage.clear(); location.reload(); }
+function resetApp() { squad = []; document.getElementById('playerList').innerHTML = ''; document.querySelectorAll('.player').forEach(p=>p.remove()); }
 function saveField() {
   html2canvas(document.getElementById('field')).then(canvas => {
     const link = document.createElement('a');
@@ -202,13 +193,6 @@ function saveField() {
     link.href = canvas.toDataURL();
     link.click();
   });
-}
-
-// İlk açılışta boş kalmasın
-if(localStorage.getItem(KEY)) {
-  squad = JSON.parse(localStorage.getItem(KEY));
-  renderList();
-  drawTactics();
 }
 </script>
 </body>
