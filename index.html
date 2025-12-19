@@ -2,11 +2,11 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Taktik Pro v10.4 - Dinamik Kadro</title>
+  <title>Taktik Pro v10.7 - True Random</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .field-container { position: relative; margin: 20px auto; width: fit-content; padding: 10px; }
+    .field-container { position: relative; margin: 20px auto; width: fit-content; }
     .field {
       position: relative; width: 1100px; height: 650px; background-color: #12632b;
       border: 5px solid white; border-radius: 15px; overflow: hidden;
@@ -25,14 +25,10 @@
       font-weight: bold; color: black; cursor: grab; z-index: 10; text-align: center;
       border: 2px solid rgba(0,0,0,0.3); user-select: none; font-size: 13px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform: translate(-50%, -50%);
-      transition: background-color 0.4s, left 0.5s ease-out, top 0.5s ease-out;
+      transition: background-color 0.4s, left 0.6s cubic-bezier(0.23, 1, 0.32, 1), top 0.6s cubic-bezier(0.23, 1, 0.32, 1);
     }
-    .yelekli { 
-      background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.2) 10px, rgba(255,255,255,0.2) 20px) !important;
-      border: 3px solid gold !important;
-    }
-    .player .q-tag { font-size: 10px; opacity: 0.8; display: block; margin-top: 2px; }
-    .player.selected { outline: 4px solid white; z-index: 100; transition: none; }
+    .player .q-tag { font-size: 10px; opacity: 0.9; display: block; }
+    .player.selected { outline: 4px solid white; z-index: 100; transition: none !important; }
     .ball {
       position: absolute; width: 40px; height: 40px; background: white; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; z-index: 60;
@@ -44,31 +40,34 @@
 <body class="bg-slate-900 text-white font-sans">
 
 <header class="bg-slate-800 text-center py-5 border-b-4 border-green-600 shadow-xl">
-  <h1 class="text-3xl font-black italic tracking-tighter uppercase">⚽ TAKTİK PRO v10.4 DİNAMİK</h1>
+  <h1 class="text-3xl font-black italic tracking-tighter uppercase">⚽ TAKTİK PRO v10.7 TRUE RANDOM</h1>
 </header>
 
 <div class="container mx-auto p-4">
-  <div class="bg-slate-800 p-6 rounded-2xl mb-8 flex flex-wrap gap-4 items-center justify-between border border-slate-700 shadow-2xl">
+  <div class="bg-slate-800 p-6 rounded-2xl mb-8 flex flex-wrap gap-4 items-center justify-between border border-slate-700">
     <div class="flex items-center gap-3">
       <div class="flex flex-col">
         <label class="text-[10px] text-slate-400 font-bold ml-1 uppercase">Kişi Sayısı</label>
-        <select id="pCount" class="bg-slate-700 p-3 rounded-xl border border-slate-600 font-bold text-green-400 w-32"></select>
+        <select id="pCount" class="bg-slate-700 p-3 rounded-xl border border-slate-600 font-bold text-green-400 w-32">
+          <option value="12">12 Kişi</option>
+          <option value="14" selected>14 Kişi</option>
+          <option value="16">16 Kişi</option>
+        </select>
       </div>
-      <button onclick="initPlayers()" class="mt-4 bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 shadow-lg active:scale-95">🎲 RASTGELE KADRO KUR</button>
-      <button onclick="drawTactics()" class="mt-4 bg-yellow-500 text-black px-8 py-3 rounded-xl font-black hover:bg-yellow-400 shadow-lg active:scale-95">🏟️ SAHAYA OTURT</button>
+      <button onclick="generateRandomSquad()" class="mt-4 bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 shadow-lg active:scale-95 transition-all">🎲 HER SEFERİNDE FARKLI KUR</button>
+      <button onclick="drawTactics()" class="mt-4 bg-yellow-500 text-black px-8 py-3 rounded-xl font-black hover:bg-yellow-400 shadow-lg active:scale-95 transition-all">🏟️ SAHAYA OTURT</button>
     </div>
     
     <div class="flex gap-3">
-      <button onclick="assignYelek()" class="bg-pink-600 px-6 py-3 rounded-full font-bold hover:bg-pink-500 shadow-lg">🎽 YELEK DAĞIT</button>
       <button onclick="saveField()" class="bg-green-600 px-8 py-3 rounded-full font-bold hover:bg-green-500 shadow-lg">📸 KAYDET</button>
-      <button onclick="resetApp()" class="bg-red-600/20 text-red-500 px-5 py-3 rounded-xl font-bold hover:bg-red-600">SIFIRLA</button>
+      <button onclick="resetApp()" class="bg-red-600/20 text-red-500 px-5 py-3 rounded-xl font-bold hover:bg-red-600 transition-all">SIFIRLA</button>
     </div>
   </div>
 
   <div id="playerList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10"></div>
 
-  <div class="field-container">
-    <div id="field" class="field">
+  <div class="field-container mx-auto">
+    <div id="field" class="field mx-auto">
       <div class="line center-line"></div>
       <div class="center-circle"></div>
       <div class="goal-post goal-l"></div>
@@ -82,69 +81,55 @@
 
 <script>
 let squad = [];
-const KEY = 'taktik_pro_v10_4';
-const SAFE_DIST = 95;
+const KEY = 'taktik_pro_v10_7';
 const COLORS = { A: '#f3a616', B: '#43d1f0' };
+const NAMES = ["Ahmet", "Mehmet", "Can", "Mert", "Ali", "Veli", "Burak", "Serkan", "Emre", "Arda", "Ozan", "Deniz", "Ege", "Kaan", "Yiğit", "Sarp", "Bora", "Umut"];
 
 const layoutA = { GK: [{x:8,y:50}], DEF: [{x:22,y:50},{x:24,y:22},{x:24,y:78}], MID: [{x:37,y:35},{x:37,y:65}], FWD: [{x:47,y:50}] };
 const layoutB = { GK: [{x:92,y:50}], DEF: [{x:78,y:25},{x:78,y:75}], MID: [{x:66,y:30},{x:66,y:50},{x:66,y:70}], FWD: [{x:56,y:50}] };
 
-document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('pCount');
-  for (let i = 2; i <= 22; i+=2) {
-    let o = document.createElement('option');
-    o.value = i; o.textContent = `${i} Kişi`;
-    if(i===14) o.selected = true;
-    sel.appendChild(o);
-  }
-  const saved = localStorage.getItem(KEY);
-  if (saved) { squad = JSON.parse(saved); renderList(); drawTactics(); }
-  drag(document.getElementById('ball'));
-});
-
-function initPlayers() {
+function generateRandomSquad() {
   const n = Number(document.getElementById('pCount').value);
-  // Rastgele takım ve kalite atama motoru
-  let indices = Array.from({length: n}, (_, i) => i);
-  indices.sort(() => Math.random() - 0.5); // İndisleri karıştır
-
-  squad = Array.from({length: n}, (_, i) => ({ 
-    id: i, 
-    name: `Oyuncu ${i+1}`, 
-    roles: [], 
-    quality: Math.floor(Math.random() * 10) + 1,
-    team: '' 
+  const shuffledNames = [...NAMES].sort(() => Math.random() - 0.5);
+  
+  // Önce oyuncu havuzunu oluştur
+  let newSquad = Array.from({length: n}, (_, i) => ({
+    id: i,
+    name: shuffledNames[i] || `Oyuncu ${i+1}`,
+    quality: Math.floor(Math.random() * 5) + 5, // 5-10 arası kalite
+    team: '',
+    role: ''
   }));
 
-  // Karıştırılmış indislerin yarısına A, yarısına B takımı ver
+  // Takımları rastgele karıştırarak dağıt
+  let indices = Array.from({length: n}, (_, i) => i).sort(() => Math.random() - 0.5);
   indices.forEach((idx, order) => {
-    squad[idx].team = order < n/2 ? 'A' : 'B';
+    const isTeamA = order < n/2;
+    newSquad[idx].team = isTeamA ? 'A' : 'B';
+    const tOrder = isTeamA ? order : order - (n/2);
+    
+    // Pozisyonları mantıklı dağıt
+    if(tOrder === 0) newSquad[idx].role = 'GK';
+    else if(tOrder <= 3) newSquad[idx].role = 'DEF';
+    else if(tOrder <= 5) newSquad[idx].role = 'MID';
+    else newSquad[idx].role = 'FWD';
   });
 
-  save(); 
-  renderList(); 
-  drawTactics(); // Otomatik sahaya sür
+  squad = newSquad;
+  save(); renderList(); drawTactics();
 }
 
 function renderList() {
   const container = document.getElementById('playerList');
   container.innerHTML = squad.map((p, i) => `
     <div class="bg-slate-800 p-3 rounded-xl border-l-4 ${p.team==='A'?'border-orange-500':'border-cyan-500'} shadow-md">
-      <div class="flex gap-2 mb-2">
-        <input onchange="updatePlayer(${i},'name',this.value)" value="${p.name}" class="bg-slate-900 text-white p-2 flex-grow rounded text-sm outline-none border border-slate-700">
-        <span class="text-yellow-500 font-bold self-center">⭐${p.quality}</span>
+      <div class="flex justify-between items-center mb-1">
+        <span class="font-bold">${p.name}</span>
+        <span class="text-yellow-500 text-xs">⭐${p.quality}</span>
       </div>
+      <div class="text-[10px] text-slate-400 uppercase font-black">${p.role} | Takım ${p.team}</div>
     </div>
   `).join('');
-}
-
-function updatePlayer(i, key, val) { 
-  squad[i][key] = val; 
-  save(); 
-  if(key==='name') {
-    const el = document.querySelector(`[data-id="${i}"] div`);
-    if(el) el.textContent = val;
-  }
 }
 
 function drawTactics() {
@@ -158,24 +143,23 @@ function drawTactics() {
     teamPlayers.forEach((p) => {
       const el = document.createElement('div');
       el.className = 'player';
-      el.dataset.id = p.id;
       el.style.backgroundColor = COLORS[p.team];
-      el.innerHTML = `<div>${p.name}</div><span class="q-tag">⭐${p.quality}/10</span>`;
+      el.innerHTML = `<div>${p.name}</div><span class="q-tag">⭐${p.quality} - ${p.role}</span>`;
       
-      let role = (counts.GK<1?'GK': counts.DEF<3?'DEF': counts.MID<3?'MID': 'FWD');
-      let posSet = config[role] || [{x:50,y:50}];
-      let pos = posSet[counts[role] % posSet.length];
+      let posSet = config[p.role] || [{x:50,y:50}];
+      let pos = posSet[counts[p.role] % posSet.length];
       
       el.style.left = (pos.x * 11) + "px";
       el.style.top = (pos.y * 6.5) + "px";
       
+      // Çift Tık Renk Değişimi
       el.ondblclick = () => {
         p.team = p.team === 'A' ? 'B' : 'A';
         el.style.backgroundColor = COLORS[p.team];
         save(); renderList();
       };
       
-      counts[role]++;
+      counts[p.role]++;
       drag(el);
       f.appendChild(el);
     });
@@ -192,57 +176,39 @@ function drag(el) {
     const c = e.touches ? e.touches[0] : e;
     startX = c.clientX; startY = c.clientY;
     initX = el.offsetLeft; initY = el.offsetTop;
-    el.style.transition = 'none'; // Sürüklerken animasyonu kapat
-    document.querySelectorAll('.player').forEach(p => p.classList.remove('selected'));
-    el.classList.add('selected');
+    el.style.transition = 'none';
   };
   const evMove = (e) => {
     if (!active) return;
     const c = e.touches ? e.touches[0] : e;
-    const nextX = initX + (c.clientX - startX);
-    const nextY = initY + (c.clientY - startY);
-
-    let collision = false;
-    document.querySelectorAll('.player').forEach(other => {
-      if (other === el) return;
-      const dist = Math.sqrt(Math.pow(nextX - other.offsetLeft, 2) + Math.pow(nextY - other.offsetTop, 2));
-      if (dist < SAFE_DIST) collision = true;
-    });
-
-    if (!collision) { el.style.left = nextX + "px"; el.style.top = nextY + "px"; }
+    el.style.left = (initX + (c.clientX - startX)) + "px";
+    el.style.top = (initY + (c.clientY - startY)) + "px";
   };
   const evEnd = () => {
     active = false;
-    el.style.transition = 'background-color 0.4s, left 0.5s ease-out, top 0.5s ease-out';
+    el.style.transition = 'background-color 0.4s, left 0.6s ease-out, top 0.6s ease-out';
   };
-
   el.addEventListener('mousedown', evStart);
   window.addEventListener('mousemove', evMove);
   window.addEventListener('mouseup', evEnd);
-  el.addEventListener('touchstart', evStart, {passive:false});
-  window.addEventListener('touchmove', evMove, {passive:false});
-  window.addEventListener('touchend', evEnd);
-}
-
-function assignYelek() {
-  const team = Math.random() > 0.5 ? 'A' : 'B';
-  document.querySelectorAll('.player').forEach((el) => {
-    const pId = el.dataset.id;
-    const pData = squad.find(x => x.id == pId);
-    el.classList.remove('yelekli');
-    if(pData && pData.team === team) el.classList.add('yelekli');
-  });
 }
 
 function save() { localStorage.setItem(KEY, JSON.stringify(squad)); }
-function resetApp() { if(confirm("Sıfırlansın mı?")) { localStorage.clear(); location.reload(); } }
+function resetApp() { localStorage.clear(); location.reload(); }
 function saveField() {
-  html2canvas(document.getElementById('field'), {backgroundColor:'#12632b'}).then(canvas => {
+  html2canvas(document.getElementById('field')).then(canvas => {
     const link = document.createElement('a');
-    link.download = 'taktik-pro-v10-4.png';
+    link.download = 'taktik-pro.png';
     link.href = canvas.toDataURL();
     link.click();
   });
+}
+
+// İlk açılışta boş kalmasın
+if(localStorage.getItem(KEY)) {
+  squad = JSON.parse(localStorage.getItem(KEY));
+  renderList();
+  drawTactics();
 }
 </script>
 </body>
