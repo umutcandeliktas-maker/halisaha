@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Taktik Pro - Fizik Motorlu</title>
+  <title>Taktik Pro v8.9 - Tam Paket</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -16,8 +16,9 @@
       overflow: hidden;
       resize: both;
       min-width: 800px; min-height: 500px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
+    .field::after { content: "📐 Sahayı Büyüt"; position: absolute; bottom: 5px; right: 10px; color: rgba(255,255,255,0.4); font-size: 11px; pointer-events: none; }
     .line { position: absolute; background: rgba(255,255,255,0.8); }
     .center-line { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
     .center-circle { top: 50%; left: 50%; width: 140px; height: 140px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); }
@@ -31,9 +32,9 @@
       font-weight: bold; color: black; cursor: grab; z-index: 10; text-align: center;
       border: 2px solid rgba(0,0,0,0.3); user-select: none; font-size: 13px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform: translate(-50%, -50%);
-      pointer-events: auto;
+      transition: outline 0.2s, box-shadow 0.2s;
     }
-    .player.selected { outline: 4px solid gold; box-shadow: 0 0 20px gold; z-index: 100; }
+    .player.selected { outline: 4px solid #fbbf24; box-shadow: 0 0 20px #fbbf24; z-index: 100; }
     .ball {
       position: absolute; width: 38px; height: 38px; background: white; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; z-index: 60;
@@ -44,19 +45,24 @@
 </head>
 <body class="bg-slate-900 text-white font-sans">
 
-<header class="bg-slate-800 text-center py-6 border-b-4 border-green-600 shadow-xl">
-  <h1 class="text-3xl font-black italic tracking-tighter">⚽ TAKTİK PRO v8.8 (Fizik Motorlu)</h1>
+<header class="bg-slate-800 text-center py-5 border-b-4 border-green-600 shadow-xl">
+  <h1 class="text-3xl font-black italic tracking-tighter">⚽ TAKTİK PRO v8.9</h1>
 </header>
 
 <div class="container mx-auto p-4">
   <div class="bg-slate-800 p-6 rounded-2xl mb-8 flex flex-wrap gap-6 items-center justify-between border border-slate-700 shadow-2xl">
     <div class="flex items-center gap-4">
-      <select id="pCount" class="bg-slate-700 p-3 rounded-xl outline-none border border-slate-600 font-bold text-green-400 w-40"></select>
-      <button onclick="initPlayers()" class="bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500">YENİ KADRO</button>
+      <div class="flex flex-col">
+        <label class="text-xs text-slate-400 font-bold mb-1">OYUNCU SAYISI</label>
+        <select id="pCount" class="bg-slate-700 p-3 rounded-xl outline-none border border-slate-600 font-bold text-green-400 w-40"></select>
+      </div>
+      <button onclick="initPlayers()" class="mt-5 bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 transition-all">KADRO OLUŞTUR</button>
+      <button onclick="clearCache()" class="mt-5 bg-red-600/20 text-red-500 px-6 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all">TEMİZLE / CACHE</button>
     </div>
+    
     <div class="flex gap-4">
-      <button onclick="drawTactics()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-black shadow-lg hover:scale-105 transition-all">🏟️ SAHAYA DİZ</button>
-      <button onclick="saveField()" class="bg-green-600 px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-all shadow-lg">📸 KAYDET</button>
+      <button onclick="drawTactics()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-black shadow-lg hover:scale-105 active:scale-95 transition-all">🏟️ SAHAYA DİZ</button>
+      <button onclick="saveField()" class="bg-green-600 px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-all shadow-lg">📸 RESMİ KAYDET</button>
     </div>
   </div>
 
@@ -77,8 +83,8 @@
 
 <script>
 let squad = [];
-const KEY = 'taktik_pro_v88';
-const SAFE_DISTANCE = 85; // Oyuncuların birbirine yaklaşabileceği minimum piksel
+const KEY = 'taktik_pro_v89_final';
+const SAFE_DIST = 90; // Çarpışma sınırı
 
 const layoutA = { 
   GK: [{x:7, y:50}], 
@@ -98,31 +104,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('pCount');
   for (let i = 2; i <= 22; i+=2) {
     let o = document.createElement('option');
-    o.value = i; o.textContent = `${i} Oyuncu`;
+    o.value = i; o.textContent = `${i} Oyuncu (${i/2}v${i/2})`;
     if(i===14) o.selected = true;
     sel.appendChild(o);
   }
   const saved = localStorage.getItem(KEY);
-  if (saved) squad = JSON.parse(saved); else initPlayers();
-  renderList();
+  if (saved) { squad = JSON.parse(saved); renderList(); } else { initPlayers(); }
   drag(document.getElementById('ball'));
 });
 
 function initPlayers() {
   const n = Number(document.getElementById('pCount').value);
   squad = Array.from({length: n}, (_, i) => ({ id: i, name: `Oyuncu ${i+1}`, roles: [] }));
-  localStorage.setItem(KEY, JSON.stringify(squad));
-  renderList();
+  save(); renderList();
 }
 
 function renderList() {
   const container = document.getElementById('playerList');
   container.innerHTML = squad.map((p, i) => `
-    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-      <input onchange="squad[${i}].name=this.value; localStorage.setItem(KEY, JSON.stringify(squad))" value="${p.name}" class="bg-slate-900 text-white p-2 w-full rounded mb-2 text-sm outline-none">
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+      <input onchange="squad[${i}].name=this.value; save();" value="${p.name}" class="bg-slate-900 text-white p-2 w-full rounded mb-3 border border-slate-700 outline-none">
       <div class="grid grid-cols-4 gap-1">
         ${['GK','DEF','MID','FWD'].map(r => `
-          <button onclick="toggleRole(${i},'${r}')" class="text-[9px] py-1 rounded ${p.roles.includes(r)?'bg-indigo-600':'bg-slate-700'}">${r}</button>
+          <button onclick="toggleRole(${i},'${r}')" class="text-[10px] py-2 rounded font-bold transition-all ${p.roles.includes(r)?'bg-indigo-600 text-white':'bg-slate-700 text-slate-400'}">${r}</button>
         `).join('')}
       </div>
     </div>
@@ -130,10 +134,8 @@ function renderList() {
 }
 
 function toggleRole(i, r) {
-  if(squad[i].roles.includes(r)) squad[i].roles = squad[i].roles.filter(x => x!==r);
-  else squad[i].roles.push(r);
-  localStorage.setItem(KEY, JSON.stringify(squad));
-  renderList();
+  squad[i].roles.includes(r) ? squad[i].roles = squad[i].roles.filter(x=>x!==r) : squad[i].roles.push(r);
+  save(); renderList();
 }
 
 function drawTactics() {
@@ -152,22 +154,27 @@ function drawTactics() {
       el.className = 'player';
       el.textContent = p.name;
       el.style.backgroundColor = color;
+      
       let role = p.roles[0] || (counts.GK<1?'GK': counts.DEF<3?'DEF': counts.MID<3?'MID': 'FWD');
       let posBase = config[role] ? config[role][counts[role] % config[role].length] : {x:50, y:50};
-      el.style.left = posBase.x + "%";
-      el.style.top = (posBase.y + (counts[role]*2)) + "%";
+      
+      // Başlangıçta üst üste binmesinler diye hafif kaydırma
+      let offsetX = (counts[role] * 5); 
+      el.style.left = `calc(${posBase.x}% + ${offsetX}px)`;
+      el.style.top = posBase.y + "%";
+      
       counts[role]++;
       drag(el);
       f.appendChild(el);
     });
   };
+
   place(teamA, layoutA, '#f3a616');
   place(teamB, layoutB, '#43d1f0');
 }
 
 function drag(el) {
   let active = false, startX, startY, initX, initY;
-
   const evStart = (e) => {
     active = true;
     const c = e.touches ? e.touches[0] : e;
@@ -175,36 +182,24 @@ function drag(el) {
     initX = el.offsetLeft; initY = el.offsetTop;
     document.querySelectorAll('.player').forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
-    e.preventDefault();
   };
-
   const evMove = (e) => {
     if (!active) return;
     const c = e.touches ? e.touches[0] : e;
     const nextX = initX + (c.clientX - startX);
     const nextY = initY + (c.clientY - startY);
 
-    // ÇARPIŞMA KONTROLÜ (Collision Detection)
-    let canMove = true;
+    let collision = false;
     if (el.classList.contains('player')) {
-      const others = document.querySelectorAll('.player');
-      others.forEach(other => {
+      document.querySelectorAll('.player').forEach(other => {
         if (other === el) return;
-        const dx = nextX - other.offsetLeft;
-        const dy = nextY - other.offsetTop;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-        if (distance < SAFE_DISTANCE) canMove = false;
+        const dist = Math.sqrt(Math.pow(nextX - other.offsetLeft, 2) + Math.pow(nextY - other.offsetTop, 2));
+        if (dist < SAFE_DIST) collision = true;
       });
     }
-
-    if (canMove) {
-      el.style.left = nextX + "px";
-      el.style.top = nextY + "px";
-    }
+    if (!collision) { el.style.left = nextX + "px"; el.style.top = nextY + "px"; }
   };
-
   const evEnd = () => active = false;
-
   el.addEventListener('mousedown', evStart);
   window.addEventListener('mousemove', evMove);
   window.addEventListener('mouseup', evEnd);
@@ -213,10 +208,12 @@ function drag(el) {
   window.addEventListener('touchend', evEnd);
 }
 
+function save() { localStorage.setItem(KEY, JSON.stringify(squad)); }
+function clearCache() { if(confirm("Tüm veriler sıfırlansın mı?")) { localStorage.removeItem(KEY); location.reload(); } }
 function saveField() {
   html2canvas(document.getElementById('field'), {backgroundColor:'#1a8a42'}).then(canvas => {
     const link = document.createElement('a');
-    link.download = 'taktik-pro-final.png';
+    link.download = 'taktik-pro-v89.png';
     link.href = canvas.toDataURL();
     link.click();
   });
