@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Taktik Pro – HALF FIELD STABLE</title>
+<title>Taktik Pro FINAL</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -15,56 +15,71 @@ body{background:#020617;color:white}
 width:1100px;height:650px;margin:auto;position:relative;
 background:radial-gradient(circle,#0a5c2a,#032b13);
 border:5px solid #fff;border-radius:15px;
+box-shadow:0 0 40px rgba(0,0,0,.6)
 }
-
-/* ÇİZGİLER */
 .line{position:absolute;background:rgba(255,255,255,.8)}
-.mid-line{left:50%;top:0;width:2px;height:100%}
+.mid-line{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
 .center-circle{
 width:140px;height:140px;border:2px solid #fff;border-radius:50%;
 left:50%;top:50%;position:absolute;transform:translate(-50%,-50%)
 }
-.goal{position:absolute;width:20px;height:120px;border:2px solid #fff;top:50%;transform:translateY(-50%)}
+.goal{
+position:absolute;width:20px;height:120px;border:2px solid #fff;
+top:50%;transform:translateY(-50%)
+}
 .goal.left{left:-20px}
 .goal.right{right:-20px}
 
-/* OYUNCU (KÜÇÜLTÜLDÜ) */
+/* OYUNCU */
 .player{
-position:absolute;
-width:90px;
-padding:5px;
-border-radius:10px;
+position:absolute;width:120px;padding:8px;border-radius:12px;
 transform:translate(-50%,-50%);
-font-size:11px;
-font-weight:bold;
-text-align:center;
+font-weight:bold;text-align:center;color:black;
 cursor:grab;
-user-select:none;
+transition:all .35s cubic-bezier(.25,1,.5,1);
+user-select:none
 }
-.team-a{background:#f3a616;color:black}
-.team-b{background:#43d1f0;color:black}
-.vest{outline:3px dashed white}
+.team-a{background:#f3a616}
+.team-b{background:#43d1f0}
+.vest{outline:4px dashed white;filter:brightness(.85)}
+.player:active{cursor:grabbing}
 
 /* TOP */
 .ball{
-position:absolute;width:36px;height:36px;border-radius:50%;
+position:absolute;width:40px;height:40px;border-radius:50%;
 background:white;left:50%;top:50%;
 transform:translate(-50%,-50%);
-display:flex;align-items:center;justify-content:center
+display:flex;align-items:center;justify-content:center;
+cursor:grab
 }
 </style>
 </head>
 
-<body class="p-4">
+<body class="p-6">
 
-<div class="flex gap-2 mb-3">
-<select id="tA"><option>3-2-1</option><option>2-2-2</option></select>
-<select id="tB"><option>3-2-1</option><option>2-2-2</option></select>
+<div class="flex flex-wrap gap-2 mb-4 items-end">
+<select id="tA" class="bg-slate-800 p-2 rounded">
+<option>3-1-2</option>
+<option>2-2-2</option>
+<option>3-2-1</option>
+</select>
 
-<button onclick="createTeams()">Takım</button>
-<button onclick="applyTactics()">Diz</button>
-<button onclick="randomVest()">Yelek</button>
+<select id="tB" class="bg-slate-800 p-2 rounded">
+<option>3-1-2</option>
+<option>2-2-2</option>
+<option>3-2-1</option>
+</select>
+
+<button onclick="createTeams()" class="bg-blue-600 px-3 py-2 rounded">Takım Oluştur</button>
+<button onclick="applyTactics()" class="bg-green-600 px-3 py-2 rounded">Sahaya Diz</button>
+<button onclick="randomVest()" class="bg-yellow-500 px-3 py-2 rounded">Yelek Giy</button>
+<button onclick="saveTactic()" class="bg-purple-600 px-3 py-2 rounded">Kaydet</button>
+<button onclick="loadTactic()" class="bg-indigo-600 px-3 py-2 rounded">Yükle</button>
+<button onclick="exportImage()" class="bg-pink-600 px-3 py-2 rounded">Resim</button>
+<button onclick="fullReset()" class="bg-red-600 px-3 py-2 rounded">Sıfırla</button>
 </div>
+
+<div id="pList" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
 
 <div id="canvas" class="field">
 <div class="line mid-line"></div>
@@ -76,21 +91,32 @@ display:flex;align-items:center;justify-content:center
 
 <script>
 let players=[];
-let active=null,sx,sy,ix,iy;
+let vestTeam=null;
 
-/* FORMASYONLAR – KALE ↔ ORTA SAHA */
-const FORM={
-"3-2-1":{
-GK:[[8,50]],
-DEF:[[20,30],[20,50],[20,70]],
-MID:[[32,40],[32,60]],
-FWD:[[44,50]]
+/* DRAG */
+let activeDrag=null,sx,sy,ix,iy;
+
+const POS_PRIORITY=["GK","DEF","MID","FWD"];
+
+/* FORMASYONLAR (DERİNLİK BAZLI) */
+const tacts={
+"3-1-2":{
+GK:[[10,50]],
+DEF:[[25,25],[25,50],[25,75]],
+MID:[[40,50]],
+FWD:[[55,35],[55,65]]
 },
 "2-2-2":{
-GK:[[8,50]],
-DEF:[[20,35],[20,65]],
-MID:[[32,30],[32,70]],
-FWD:[[20,50],[44,50]]
+GK:[[10,50]],
+DEF:[[25,35],[25,65]],
+MID:[[40,30],[40,70]],
+FWD:[[55,35],[55,65]]
+},
+"3-2-1":{
+GK:[[10,50]],
+DEF:[[25,25],[25,50],[25,75]],
+MID:[[42,35],[42,65]],
+FWD:[[58,50]]
 }
 };
 
@@ -99,70 +125,159 @@ players=[];
 for(let i=0;i<14;i++){
 players.push({
 id:i,
-name:"P"+(i+1),
+name:`Oyuncu ${i+1}`,
 team:i<7?"A":"B",
-pos:["GK","DEF","MID","FWD"][i%4]
+positions:[]
 });
 }
+renderUI();
+}
+
+function renderUI(){
+pList.innerHTML=players.map((p,i)=>`
+<div class="bg-slate-900 p-2 rounded">
+<input value="${p.name}"
+oninput="players[${i}].name=this.value"
+class="bg-slate-800 w-full text-xs p-1 rounded mb-1">
+<div class="grid grid-cols-2 text-[9px]">
+${POS_PRIORITY.map(pos=>`
+<label>
+<input type="checkbox"
+${p.positions.includes(pos)?"checked":""}
+onchange="togglePos(${i},'${pos}',this.checked)">
+${pos}
+</label>`).join("")}
+</div>
+<span class="text-[9px] ${p.team==="A"?"text-orange-400":"text-cyan-400"}">${p.team}</span>
+</div>`).join("");
+}
+
+function togglePos(i,pos,c){
+if(c && !players[i].positions.includes(pos)) players[i].positions.push(pos);
+if(!c) players[i].positions=players[i].positions.filter(x=>x!==pos);
 }
 
 function applyTactics(){
+if(!checkGK()) return;
 document.querySelectorAll(".player").forEach(e=>e.remove());
 
 ["A","B"].forEach(team=>{
-const form=FORM[team==="A"?tA.value:tB.value];
-let used=0;
+const form=team==="A"?tA.value:tB.value;
+let slots=JSON.parse(JSON.stringify(tacts[form]));
+let used=new Set();
 
-["GK","DEF","MID","FWD"].forEach(r=>{
-form[r].forEach(p=>{
-const pl=players.find(x=>x.team===team && x.pos===r && !x.used);
-if(pl){
-pl.used=true;
-place(pl,p[0],p[1],team);
-used++;
+POS_PRIORITY.forEach(role=>{
+players.filter(p=>p.team===team && p.positions.includes(role))
+.forEach(p=>{
+if(slots[role] && slots[role].length){
+const [x,y]=slots[role].shift();
+placePlayer(p,x,y,team);
+used.add(p.id);
 }
 });
 });
-
-players.forEach(p=>p.used=false);
 });
 }
 
-function place(p,x,y,team){
-const d=document.createElement("div");
-d.className="player team-"+team.toLowerCase();
-d.textContent=p.name;
+function placePlayer(p,xp,yp,team){
+const el=document.createElement("div");
+el.className=`player team-${team.toLowerCase()}`;
+el.dataset.id=p.id;
+el.innerHTML=`${p.name}<div class="text-xs">${p.positions[0]||""}</div>`;
 
-const halfX=team==="A"?x:x+50;
-d.style.left=(halfX/100*1100)+"px";
-d.style.top=(y/100*650)+"px";
+/* 🔥 YARI SAHA MATEMATİĞİ */
+const depth=45;
+const base=team==="A"?5:50;
+const finalX=base+(xp/100)*depth;
 
-d.onmousedown=e=>{
-active=d;sx=e.clientX;sy=e.clientY;
-ix=d.offsetLeft;iy=d.offsetTop;
+el.style.left=(finalX/100*1100)+"px";
+el.style.top=(yp/100*650)+"px";
+
+makeDraggable(el);
+el.ondblclick=()=>switchTeam(el);
+canvas.appendChild(el);
+}
+
+/* DRAG FIX */
+function makeDraggable(el){
+el.onmousedown=e=>{
+activeDrag=el;
+sx=e.clientX; sy=e.clientY;
+ix=el.offsetLeft; iy=el.offsetTop;
+el.style.transition="none";
+el.style.zIndex=99;
 };
+}
 
-d.ondblclick=()=>{
+window.addEventListener("mousemove",e=>{
+if(!activeDrag) return;
+activeDrag.style.left=(ix+e.clientX-sx)+"px";
+activeDrag.style.top=(iy+e.clientY-sy)+"px";
+});
+window.addEventListener("mouseup",()=>{
+if(!activeDrag) return;
+activeDrag.style.transition="all .35s";
+activeDrag.style.zIndex=20;
+activeDrag=null;
+});
+
+function switchTeam(el){
+const p=players.find(x=>x.id==el.dataset.id);
 p.team=p.team==="A"?"B":"A";
-d.classList.toggle("team-a");
-d.classList.toggle("team-b");
-d.style.left=(1100-d.offsetLeft)+"px";
-};
-
-canvas.appendChild(d);
+el.classList.toggle("team-a");
+el.classList.toggle("team-b");
+el.style.left=(1100-el.offsetLeft)+"px";
+renderUI();
 }
-
-window.onmousemove=e=>{
-if(!active)return;
-active.style.left=(ix+e.clientX-sx)+"px";
-active.style.top=(iy+e.clientY-sy)+"px";
-};
-window.onmouseup=()=>active=null;
 
 function randomVest(){
 document.querySelectorAll(".player").forEach(p=>p.classList.remove("vest"));
-const t=Math.random()<0.5?"a":"b";
-document.querySelectorAll(".team-"+t).forEach(p=>p.classList.add("vest"));
+vestTeam=Math.random()<0.5?"A":"B";
+document.querySelectorAll(`.team-${vestTeam.toLowerCase()}`)
+.forEach(p=>p.classList.add("vest"));
+}
+
+function checkGK(){
+for(let t of ["A","B"]){
+if(!players.some(p=>p.team===t && p.positions.includes("GK"))){
+alert(t+" takımında kaleci yok");
+return false;
+}}
+return true;
+}
+
+function saveTactic(){
+localStorage.setItem("tacticData",JSON.stringify({players,tA:tA.value,tB:tB.value}));
+alert("Kaydedildi");
+}
+
+function loadTactic(){
+const d=localStorage.getItem("tacticData");
+if(!d) return;
+const data=JSON.parse(d);
+players=data.players;
+tA.value=data.tA;
+tB.value=data.tB;
+renderUI();
+applyTactics();
+}
+
+function exportImage(){
+html2canvas(canvas).then(c=>{
+const a=document.createElement("a");
+a.download="taktik.png";
+a.href=c.toDataURL();
+a.click();
+});
+}
+
+function fullReset(){
+players=[];
+pList.innerHTML="";
+document.querySelectorAll(".player").forEach(e=>e.remove());
+localStorage.clear();
+ball.style.left="50%";
+ball.style.top="50%";
 }
 </script>
 </body>
