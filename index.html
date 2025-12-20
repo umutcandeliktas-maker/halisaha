@@ -2,29 +2,48 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Taktik Pro v15 FINAL</title>
+<title>Taktik Pro v15.1 FINAL</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
 body{background:#020617;color:white}
+
+/* SAHA */
 .field{
 width:1100px;height:650px;margin:auto;position:relative;
-background:radial-gradient(circle,#064d23,#021a0b);
-border:5px solid white;border-radius:15px
+background:radial-gradient(circle,#0a5c2a,#032b13);
+border:5px solid #fff;border-radius:15px;
+box-shadow:0 0 40px rgba(0,0,0,.6)
 }
+.line{position:absolute;background:rgba(255,255,255,.8)}
+.mid-line{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
+.center-circle{
+width:140px;height:140px;border:2px solid #fff;border-radius:50%;
+left:50%;top:50%;position:absolute;transform:translate(-50%,-50%)
+}
+.goal{
+position:absolute;width:20px;height:120px;border:2px solid #fff;top:50%;
+transform:translateY(-50%)
+}
+.goal.left{left:-20px}
+.goal.right{right:-20px}
+
+/* OYUNCU */
 .player{
 position:absolute;width:120px;padding:8px;border-radius:12px;
 transform:translate(-50%,-50%);
 font-weight:bold;text-align:center;color:black;
 cursor:grab;
-transition:all .4s cubic-bezier(.25,1,.5,1)
+transition:all .35s cubic-bezier(.25,1,.5,1)
 }
-.player:active{cursor:grabbing}
 .team-a{background:#f3a616}
 .team-b{background:#43d1f0}
-.vest{outline:4px solid white;filter:brightness(.85)}
+.vest{outline:4px dashed white;filter:brightness(.85)}
+.player:active{cursor:grabbing}
+
+/* TOP */
 .ball{
 position:absolute;width:40px;height:40px;border-radius:50%;
 background:white;left:50%;top:50%;
@@ -47,7 +66,7 @@ cursor:grab
 
 <button onclick="createTeams()" class="bg-blue-600 px-3 py-2 rounded">Takım Oluştur</button>
 <button onclick="applyTactics()" class="bg-green-600 px-3 py-2 rounded">Sahaya Diz</button>
-<button onclick="toggleVest()" class="bg-yellow-500 px-3 py-2 rounded">Yelek</button>
+<button onclick="randomVest()" class="bg-yellow-500 px-3 py-2 rounded">Yelek Giy</button>
 <button onclick="saveTactic()" class="bg-purple-600 px-3 py-2 rounded">Kaydet</button>
 <button onclick="loadTactic()" class="bg-indigo-600 px-3 py-2 rounded">Yükle</button>
 <button onclick="exportImage()" class="bg-pink-600 px-3 py-2 rounded">Resim Paylaş</button>
@@ -57,32 +76,37 @@ cursor:grab
 <div id="pList" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6"></div>
 
 <div id="canvas" class="field">
+<div class="line mid-line"></div>
+<div class="center-circle"></div>
+<div class="goal left"></div>
+<div class="goal right"></div>
 <div id="ball" class="ball">⚽</div>
 </div>
 
 <script>
-let players=[],vestTurn="A";
+let players=[];
 
 const POS_PRIORITY=["GK","DEF","MID","FWD"];
 
+/* % bazlı slotlar */
 const tacts={
 "3-1-2":{
-GK:[{x:7,y:50}],
-DEF:[{x:18,y:20},{x:18,y:50},{x:18,y:80}],
-MID:[{x:33,y:50}],
-FWD:[{x:46,y:25},{x:46,y:75}]
+GK:[[7,50]],
+DEF:[[18,20],[18,50],[18,80]],
+MID:[[35,50]],
+FWD:[[50,25],[50,75]]
 },
 "2-2-2":{
-GK:[{x:7,y:50}],
-DEF:[{x:18,y:30},{x:18,y:70}],
-MID:[{x:32,y:25},{x:32,y:75}],
-FWD:[{x:46,y:30},{x:46,y:70}]
+GK:[[7,50]],
+DEF:[[18,30],[18,70]],
+MID:[[32,25],[32,75]],
+FWD:[[48,30],[48,70]]
 },
 "3-2-1":{
-GK:[{x:7,y:50}],
-DEF:[{x:18,y:20},{x:18,y:50},{x:18,y:80}],
-MID:[{x:33,y:35},{x:33,y:65}],
-FWD:[{x:46,y:50}]
+GK:[[7,50]],
+DEF:[[18,20],[18,50],[18,80]],
+MID:[[32,35],[32,65]],
+FWD:[[48,50]]
 }
 };
 
@@ -114,17 +138,13 @@ onchange="togglePos(${i},'${pos}',this.checked)">
 ${pos}
 </label>`).join("")}
 </div>
-<span class="text-[9px] ${p.team=="A"?"text-orange-400":"text-cyan-400"}">
-${p.team} Takımı
-</span>
+<span class="text-[9px] ${p.team==="A"?"text-orange-400":"text-cyan-400"}">${p.team}</span>
 </div>`).join("");
 }
 
 function togglePos(i,pos,c){
-if(c && !players[i].positions.includes(pos))
-players[i].positions.push(pos);
-if(!c)
-players[i].positions=players[i].positions.filter(x=>x!==pos);
+if(c && !players[i].positions.includes(pos)) players[i].positions.push(pos);
+if(!c) players[i].positions=players[i].positions.filter(x=>x!==pos);
 }
 
 function applyTactics(){
@@ -132,38 +152,37 @@ if(!checkGK()) return;
 document.querySelectorAll(".player").forEach(e=>e.remove());
 
 ["A","B"].forEach(team=>{
-const form=team=="A"?tA.value:tB.value;
+const form=team==="A"?tA.value:tB.value;
 let slots=JSON.parse(JSON.stringify(tacts[form]));
 
-players.filter(p=>p.team==team).forEach(p=>{
-for(let role of POS_PRIORITY){
-if(p.positions.includes(role) && slots[role].length){
-const c=slots[role].shift();
-createPlayerEl(p,c,team);
+players.filter(p=>p.team===team).forEach(p=>{
+for(let r of POS_PRIORITY){
+if(p.positions.includes(r) && slots[r].length){
+const [x,y]=slots[r].shift();
+placePlayer(p,x,y,team);
 break;
 }}
 });
 });
 }
 
-function createPlayerEl(p,c,team){
+function placePlayer(p,xp,yp,team){
 const el=document.createElement("div");
 el.className=`player team-${team.toLowerCase()}`;
 el.dataset.id=p.id;
 el.innerHTML=`${p.name}<div class="text-xs">${p.positions[0]||""}</div>`;
 
-let x=team=="A"?c.x:100-c.x;
-el.style.left=(x*11)+"px";
-el.style.top=(c.y*6.5)+"px";
+let fx=team==="A"?xp:100-xp;
+el.style.left=(fx/100*1100)+"px";
+el.style.top=(yp/100*650)+"px";
 
 makeDraggable(el);
-el.addEventListener("dblclick",()=>switchTeam(el));
+el.ondblclick=()=>switchTeam(el);
 canvas.appendChild(el);
 }
 
 function switchTeam(el){
-const id=parseInt(el.dataset.id);
-const p=players.find(x=>x.id===id);
+const p=players.find(x=>x.id==el.dataset.id);
 p.team=p.team==="A"?"B":"A";
 el.classList.toggle("team-a");
 el.classList.toggle("team-b");
@@ -171,82 +190,50 @@ renderUI();
 }
 
 function makeDraggable(el){
-let active=false,sx,sy,ix,iy;
-
-el.addEventListener("mousedown",e=>{
-active=true;
-sx=e.clientX; sy=e.clientY;
-ix=el.offsetLeft; iy=el.offsetTop;
-el.style.transition="none";
-el.style.zIndex=100;
-});
-
-window.addEventListener("mousemove",e=>{
-if(!active) return;
+let a=false,sx,sy,ix,iy;
+el.onmousedown=e=>{
+a=true;sx=e.clientX;sy=e.clientY;
+ix=el.offsetLeft;iy=el.offsetTop;
+el.style.transition="none";el.style.zIndex=99;
+};
+window.onmousemove=e=>{
+if(!a) return;
 el.style.left=(ix+e.clientX-sx)+"px";
 el.style.top=(iy+e.clientY-sy)+"px";
-});
+};
+window.onmouseup=()=>{
+a=false;el.style.transition="all .35s";el.style.zIndex=20;
+};
+}
 
-window.addEventListener("mouseup",()=>{
-active=false;
-el.style.transition="all .4s cubic-bezier(.25,1,.5,1)";
-el.style.zIndex=20;
-});
-
-/* Mobil */
-el.addEventListener("touchstart",e=>{
-active=true;
-sx=e.touches[0].clientX;
-sy=e.touches[0].clientY;
-ix=el.offsetLeft;
-iy=el.offsetTop;
-el.style.transition="none";
-},{passive:true});
-
-window.addEventListener("touchmove",e=>{
-if(!active) return;
-el.style.left=(ix+e.touches[0].clientX-sx)+"px";
-el.style.top=(iy+e.touches[0].clientY-sy)+"px";
-},{passive:false});
-
-window.addEventListener("touchend",()=>{
-active=false;
-el.style.transition="all .4s cubic-bezier(.25,1,.5,1)";
-});
+function randomVest(){
+document.querySelectorAll(".player").forEach(p=>p.classList.remove("vest"));
+const team=Math.random()<0.5?"A":"B";
+document.querySelectorAll(`.team-${team.toLowerCase()}`)
+.forEach(p=>p.classList.add("vest"));
 }
 
 function checkGK(){
 for(let t of ["A","B"]){
-if(!players.some(p=>p.team==t && p.positions.includes("GK"))){
+if(!players.some(p=>p.team===t && p.positions.includes("GK"))){
 alert(t+" takımında kaleci yok");
 return false;
 }}
 return true;
 }
 
-function toggleVest(){
-document.querySelectorAll(`.team-${vestTurn.toLowerCase()}`)
-.forEach(p=>p.classList.toggle("vest"));
-vestTurn=vestTurn=="A"?"B":"A";
-}
-
 function saveTactic(){
-localStorage.setItem("tacticData",JSON.stringify({
-players,vestTurn,tA:tA.value,tB:tB.value
-}));
-alert("Taktik kaydedildi");
+localStorage.setItem("tacticData",JSON.stringify({players,tA:tA.value,tB:tB.value}));
+alert("Kaydedildi");
 }
 
 function loadTactic(){
 const d=localStorage.getItem("tacticData");
-if(!d) return alert("Kayıt yok");
+if(!d) return;
 const data=JSON.parse(d);
 players=data.players;
-vestTurn=data.vestTurn;
-tA.value=data.tA;
-tB.value=data.tB;
-renderUI();
-applyTactics();
+tA.value=data.tA;tB.value=data.tB;
+renderUI();applyTactics();
 }
 
 function exportImage(){
@@ -262,9 +249,8 @@ function fullReset(){
 players=[];
 pList.innerHTML="";
 document.querySelectorAll(".player").forEach(e=>e.remove());
-localStorage.removeItem("tacticData");
+localStorage.clear();
 ball.style.left="50%";ball.style.top="50%";
-vestTurn="A";
 }
 </script>
 </body>
