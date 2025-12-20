@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Taktik Pro FINAL</title>
+<title>Taktik Pro – FINAL STABLE</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -89,33 +89,38 @@ cursor:grab
 </div>
 
 <script>
+/* ------------------ GLOBAL ------------------ */
 let players=[];
 let vestTeam=null;
 
+/* DRAG FIX */
+let activeDrag=null, sx=0, sy=0, ix=0, iy=0;
+
 const POS_PRIORITY=["GK","DEF","MID","FWD"];
 
-/* DÜZGÜN FORMASYONLAR */
+/* FORMASYONLAR (0–100, yarı saha ölçeklenir) */
 const tacts={
 "3-1-2":{
-GK:[[8,50]],
-DEF:[[22,25],[22,50],[22,75]],
+GK:[[10,50]],
+DEF:[[25,25],[25,50],[25,75]],
 MID:[[40,50]],
-FWD:[[58,35],[58,65]]
+FWD:[[55,35],[55,65]]
 },
 "2-2-2":{
-GK:[[8,50]],
-DEF:[[22,35],[22,65]],
+GK:[[10,50]],
+DEF:[[25,35],[25,65]],
 MID:[[40,35],[40,65]],
-FWD:[[58,35],[58,65]]
+FWD:[[55,35],[55,65]]
 },
 "3-2-1":{
-GK:[[8,50]],
-DEF:[[22,25],[22,50],[22,75]],
+GK:[[10,50]],
+DEF:[[25,25],[25,50],[25,75]],
 MID:[[42,35],[42,65]],
-FWD:[[60,50]]
+FWD:[[58,50]]
 }
 };
 
+/* ------------------ TEAMS ------------------ */
 function createTeams(){
 players=[];
 for(let i=0;i<14;i++){
@@ -129,6 +134,7 @@ positions:[]
 renderUI();
 }
 
+/* ------------------ UI ------------------ */
 function renderUI(){
 pList.innerHTML=players.map((p,i)=>`
 <div class="bg-slate-900 p-2 rounded">
@@ -153,9 +159,9 @@ if(c && !players[i].positions.includes(pos)) players[i].positions.push(pos);
 if(!c) players[i].positions=players[i].positions.filter(x=>x!==pos);
 }
 
+/* ------------------ SAHAYA DİZ ------------------ */
 function applyTactics(){
 if(!checkGK()) return;
-
 document.querySelectorAll(".player").forEach(e=>e.remove());
 
 ["A","B"].forEach(team=>{
@@ -163,7 +169,6 @@ const form=team==="A"?tA.value:tB.value;
 let slots=JSON.parse(JSON.stringify(tacts[form]));
 let used=new Set();
 
-/* Önce pozisyona göre */
 POS_PRIORITY.forEach(role=>{
 players.filter(p=>p.team===team && p.positions.includes(role))
 .forEach(p=>{
@@ -175,7 +180,6 @@ used.add(p.id);
 });
 });
 
-/* Artanlar (çakışma yok) */
 let extraY=20;
 players.filter(p=>p.team===team && !used.has(p.id))
 .forEach(p=>{
@@ -185,14 +189,17 @@ extraY+=12;
 });
 }
 
+/* ------------------ PLAYER ------------------ */
 function placePlayer(p,xp,yp,team){
 const el=document.createElement("div");
 el.className=`player team-${team.toLowerCase()}`;
 el.dataset.id=p.id;
 el.innerHTML=`${p.name}<div class="text-xs">${p.positions[0]||""}</div>`;
 
-let fx=team==="A"?xp:100-xp;
-el.style.left=(fx/100*1100)+"px";
+/* YARI SAHA MATEMATİĞİ */
+const halfX = team==="A" ? xp*0.5 : 50+xp*0.5;
+
+el.style.left=(halfX/100*1100)+"px";
 el.style.top=(yp/100*650)+"px";
 
 makeDraggable(el);
@@ -200,34 +207,41 @@ el.ondblclick=()=>switchTeam(el);
 canvas.appendChild(el);
 }
 
+/* ------------------ DRAG ------------------ */
+function makeDraggable(el){
+el.onmousedown=e=>{
+activeDrag=el;
+sx=e.clientX; sy=e.clientY;
+ix=el.offsetLeft; iy=el.offsetTop;
+el.style.transition="none";
+el.style.zIndex=99;
+};
+}
+
+window.addEventListener("mousemove",e=>{
+if(!activeDrag) return;
+activeDrag.style.left=(ix+e.clientX-sx)+"px";
+activeDrag.style.top =(iy+e.clientY-sy)+"px";
+});
+
+window.addEventListener("mouseup",()=>{
+if(!activeDrag) return;
+activeDrag.style.transition="all .35s";
+activeDrag.style.zIndex=20;
+activeDrag=null;
+});
+
+/* ------------------ TEAM SWITCH ------------------ */
 function switchTeam(el){
 const p=players.find(x=>x.id==el.dataset.id);
 p.team=p.team==="A"?"B":"A";
 el.classList.toggle("team-a");
 el.classList.toggle("team-b");
-
-/* saha aynalama */
 el.style.left=(1100-el.offsetLeft)+"px";
 renderUI();
 }
 
-function makeDraggable(el){
-let a=false,sx,sy,ix,iy;
-el.onmousedown=e=>{
-a=true;sx=e.clientX;sy=e.clientY;
-ix=el.offsetLeft;iy=el.offsetTop;
-el.style.transition="none";el.style.zIndex=99;
-};
-window.onmousemove=e=>{
-if(!a) return;
-el.style.left=(ix+e.clientX-sx)+"px";
-el.style.top=(iy+e.clientY-sy)+"px";
-};
-window.onmouseup=()=>{
-a=false;el.style.transition="all .35s";el.style.zIndex=20;
-};
-}
-
+/* ------------------ EXTRA ------------------ */
 function randomVest(){
 document.querySelectorAll(".player").forEach(p=>p.classList.remove("vest"));
 vestTeam=Math.random()<0.5?"A":"B";
@@ -254,8 +268,8 @@ const d=localStorage.getItem("tacticData");
 if(!d) return;
 const data=JSON.parse(d);
 players=data.players;
-tA.value=data.tA;tB.value=data.tB;
-renderUI();applyTactics();
+tA.value=data.tA; tB.value=data.tB;
+renderUI(); applyTactics();
 }
 
 function exportImage(){
