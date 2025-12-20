@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Taktik Pro v15.1 FINAL FIX</title>
+<title>Taktik Pro v15.1 PERSIST</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -67,8 +67,6 @@ cursor:grab
 <button onclick="createTeams()" class="bg-blue-600 px-3 py-2 rounded">Takım Oluştur</button>
 <button onclick="applyTactics()" class="bg-green-600 px-3 py-2 rounded">Sahaya Diz</button>
 <button onclick="randomVest()" class="bg-yellow-500 px-3 py-2 rounded">Yelek Giy</button>
-<button onclick="saveTactic()" class="bg-purple-600 px-3 py-2 rounded">Kaydet</button>
-<button onclick="loadTactic()" class="bg-indigo-600 px-3 py-2 rounded">Yükle</button>
 <button onclick="exportImage()" class="bg-pink-600 px-3 py-2 rounded">Resim Paylaş</button>
 <button onclick="fullReset()" class="bg-red-600 px-3 py-2 rounded">Sıfırla</button>
 </div>
@@ -89,12 +87,11 @@ let activeDrag=null,sx,sy,ix,iy;
 
 const POS_PRIORITY=["GK","DEF","MID","FWD"];
 
-/* 🔥 DÜZELTİLMİŞ FORMASYONLAR */
 const tacts={
 "3-1-2":{
 GK:[[0,50]],
 DEF:[[20,20],[20,50],[20,80]],
-MID:[[40,50],[40,65]],   // 🔥 EKSTRA SLOT (EKSİK OYUNCU FIX)
+MID:[[40,50],[40,65]],
 FWD:[[60,40],[60,70]]
 },
 "2-2-2":{
@@ -121,12 +118,7 @@ const j=Math.floor(Math.random()*(i+1));
 function createTeams(){
 players=[];
 for(let i=0;i<14;i++){
-players.push({
-id:i,
-name:`Oyuncu ${i+1}`,
-team:i<7?"A":"B",
-positions:[]
-});
+players.push({id:i,name:`Oyuncu ${i+1}`,team:i<7?"A":"B",positions:[]});
 }
 renderUI();
 }
@@ -139,14 +131,10 @@ oninput="players[${i}].name=this.value"
 class="bg-slate-800 w-full text-xs p-1 rounded mb-1">
 <div class="grid grid-cols-2 text-[9px]">
 ${POS_PRIORITY.map(pos=>`
-<label>
-<input type="checkbox"
+<label><input type="checkbox"
 ${p.positions.includes(pos)?"checked":""}
-onchange="togglePos(${i},'${pos}',this.checked)">
-${pos}
-</label>`).join("")}
+onchange="togglePos(${i},'${pos}',this.checked)"> ${pos}</label>`).join("")}
 </div>
-<span class="text-[9px] ${p.team==="A"?"text-orange-400":"text-cyan-400"}">${p.team}</span>
 </div>`).join("");
 }
 
@@ -156,15 +144,12 @@ if(!c) players[i].positions=players[i].positions.filter(x=>x!==pos);
 }
 
 function applyTactics(){
-if(!checkGK()) return;
 document.querySelectorAll(".player").forEach(e=>e.remove());
-
 ["A","B"].forEach(team=>{
-const form=team==="A"?tA.value:tB.value;
+let form=team==="A"?tA.value:tB.value;
 let slots=JSON.parse(JSON.stringify(tacts[form]));
 let teamPlayers=players.filter(p=>p.team===team);
 shuffle(teamPlayers);
-
 let fy=20;
 
 teamPlayers.forEach(p=>{
@@ -173,32 +158,28 @@ for(let r of POS_PRIORITY){
 if(p.positions.includes(r) && slots[r]?.length){
 const [xp,yp]=slots[r].shift();
 placePlayer(p,xp,yp,team);
-placed=true;
-break;
+placed=true;break;
 }}
-if(!placed){
-placePlayer(p,30,fy,team);
-fy+=12;
-}
+if(!placed){placePlayer(p,30,fy,team);fy+=12;}
 });
 });
+saveFormation();
 }
 
 function placePlayer(p,xp,yp,team){
 const el=document.createElement("div");
 el.className=`player team-${team.toLowerCase()}`;
 el.dataset.id=p.id;
-el.innerHTML=`${p.name}<div class="text-xs">${p.positions[0]||""}</div>`;
+el.innerHTML=p.name;
 
 const depth=45;
 const base=team==="A"?5:50;
-const finalX=base+(xp/100)*depth;
+const fx=base+(xp/100)*depth;
 
-el.style.left=(finalX/100*1100)+"px";
+el.style.left=(fx/100*1100)+"px";
 el.style.top=(yp/100*650)+"px";
 
 makeDraggable(el);
-el.ondblclick=()=>switchTeam(el);
 canvas.appendChild(el);
 }
 
@@ -207,76 +188,64 @@ el.onmousedown=e=>{
 activeDrag=el;
 sx=e.clientX;sy=e.clientY;
 ix=el.offsetLeft;iy=el.offsetTop;
-el.style.transition="none";
 };
 }
 
-window.addEventListener("mousemove",e=>{
+window.onmousemove=e=>{
 if(!activeDrag) return;
 activeDrag.style.left=(ix+e.clientX-sx)+"px";
 activeDrag.style.top=(iy+e.clientY-sy)+"px";
-});
-
-window.addEventListener("mouseup",()=>{
-if(!activeDrag) return;
-activeDrag.style.transition="all .25s";
-activeDrag=null;
-});
-
-function switchTeam(el){
-const p=players.find(x=>x.id==el.dataset.id);
-p.team=p.team==="A"?"B":"A";
-el.classList.toggle("team-a");
-el.classList.toggle("team-b");
-el.style.left=(1100-el.offsetLeft)+"px";
-renderUI();
-}
+};
+window.onmouseup=()=>activeDrag=null;
 
 function randomVest(){
 document.querySelectorAll(".player").forEach(p=>p.classList.remove("vest"));
-const t=Math.random()<0.5?"a":"b";
-document.querySelectorAll(".team-"+t).forEach(p=>p.classList.add("vest"));
+document.querySelectorAll(Math.random()<0.5?".team-a":".team-b")
+.forEach(p=>p.classList.add("vest"));
 }
 
-function checkGK(){
-for(let t of ["A","B"]){
-if(!players.some(p=>p.team===t && p.positions.includes("GK"))){
-alert(t+" takımında kaleci yok");
-return false;
-}}
-return true;
+/* 🔥 FORMASYON HAFIZASI */
+function saveFormation(){
+const data=[...document.querySelectorAll(".player")].map(p=>({
+id:p.dataset.id,
+left:p.style.left,
+top:p.style.top,
+class:p.className
+}));
+localStorage.setItem("lastFormation",JSON.stringify({
+players:data,tA:tA.value,tB:tB.value
+}));
 }
 
-function saveTactic(){
-localStorage.setItem("tacticData",JSON.stringify({players,tA:tA.value,tB:tB.value}));
-alert("Kaydedildi");
-}
-
-function loadTactic(){
-const d=localStorage.getItem("tacticData");
+function loadFormation(){
+const d=localStorage.getItem("lastFormation");
 if(!d) return;
 const data=JSON.parse(d);
-players=data.players;
 tA.value=data.tA;tB.value=data.tB;
-renderUI();applyTactics();
+data.players.forEach(p=>{
+const el=document.createElement("div");
+el.className=p.class;
+el.style.left=p.left;
+el.style.top=p.top;
+el.textContent="Oyuncu";
+makeDraggable(el);
+canvas.appendChild(el);
+});
 }
 
 function exportImage(){
 html2canvas(canvas).then(c=>{
-const a=document.createElement("a");
-a.download="taktik.png";
-a.href=c.toDataURL();
-a.click();
+let a=document.createElement("a");
+a.href=c.toDataURL();a.download="taktik.png";a.click();
 });
 }
 
 function fullReset(){
-players=[];
-pList.innerHTML="";
 document.querySelectorAll(".player").forEach(e=>e.remove());
-localStorage.clear();
-ball.style.left="50%";ball.style.top="50%";
 }
+
+/* SAYFA AÇILINCA */
+loadFormation();
 </script>
 </body>
 </html>
