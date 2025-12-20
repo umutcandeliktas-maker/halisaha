@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Taktik Pro v15.1 FINAL</title>
+<title>Taktik Pro FINAL</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -24,8 +24,8 @@ width:140px;height:140px;border:2px solid #fff;border-radius:50%;
 left:50%;top:50%;position:absolute;transform:translate(-50%,-50%)
 }
 .goal{
-position:absolute;width:20px;height:120px;border:2px solid #fff;top:50%;
-transform:translateY(-50%)
+position:absolute;width:20px;height:120px;border:2px solid #fff;
+top:50%;transform:translateY(-50%)
 }
 .goal.left{left:-20px}
 .goal.right{right:-20px}
@@ -58,10 +58,15 @@ cursor:grab
 
 <div class="flex flex-wrap gap-2 mb-4 items-end">
 <select id="tA" class="bg-slate-800 p-2 rounded">
-<option>3-1-2</option><option>2-2-2</option><option>3-2-1</option>
+<option>3-1-2</option>
+<option>2-2-2</option>
+<option>3-2-1</option>
 </select>
+
 <select id="tB" class="bg-slate-800 p-2 rounded">
-<option>3-1-2</option><option>2-2-2</option><option>3-2-1</option>
+<option>3-1-2</option>
+<option>2-2-2</option>
+<option>3-2-1</option>
 </select>
 
 <button onclick="createTeams()" class="bg-blue-600 px-3 py-2 rounded">Takım Oluştur</button>
@@ -69,7 +74,7 @@ cursor:grab
 <button onclick="randomVest()" class="bg-yellow-500 px-3 py-2 rounded">Yelek Giy</button>
 <button onclick="saveTactic()" class="bg-purple-600 px-3 py-2 rounded">Kaydet</button>
 <button onclick="loadTactic()" class="bg-indigo-600 px-3 py-2 rounded">Yükle</button>
-<button onclick="exportImage()" class="bg-pink-600 px-3 py-2 rounded">Resim Paylaş</button>
+<button onclick="exportImage()" class="bg-pink-600 px-3 py-2 rounded">Resim</button>
 <button onclick="fullReset()" class="bg-red-600 px-3 py-2 rounded">Sıfırla</button>
 </div>
 
@@ -85,28 +90,29 @@ cursor:grab
 
 <script>
 let players=[];
+let vestTeam=null;
 
 const POS_PRIORITY=["GK","DEF","MID","FWD"];
 
-/* % bazlı slotlar */
+/* DÜZGÜN FORMASYONLAR */
 const tacts={
 "3-1-2":{
-GK:[[7,50]],
-DEF:[[18,20],[18,50],[18,80]],
-MID:[[35,50]],
-FWD:[[50,25],[50,75]]
+GK:[[8,50]],
+DEF:[[22,25],[22,50],[22,75]],
+MID:[[40,50]],
+FWD:[[58,35],[58,65]]
 },
 "2-2-2":{
-GK:[[7,50]],
-DEF:[[18,30],[18,70]],
-MID:[[32,25],[32,75]],
-FWD:[[48,30],[48,70]]
+GK:[[8,50]],
+DEF:[[22,35],[22,65]],
+MID:[[40,35],[40,65]],
+FWD:[[58,35],[58,65]]
 },
 "3-2-1":{
-GK:[[7,50]],
-DEF:[[18,20],[18,50],[18,80]],
-MID:[[32,35],[32,65]],
-FWD:[[48,50]]
+GK:[[8,50]],
+DEF:[[22,25],[22,50],[22,75]],
+MID:[[42,35],[42,65]],
+FWD:[[60,50]]
 }
 };
 
@@ -149,19 +155,32 @@ if(!c) players[i].positions=players[i].positions.filter(x=>x!==pos);
 
 function applyTactics(){
 if(!checkGK()) return;
+
 document.querySelectorAll(".player").forEach(e=>e.remove());
 
 ["A","B"].forEach(team=>{
 const form=team==="A"?tA.value:tB.value;
 let slots=JSON.parse(JSON.stringify(tacts[form]));
+let used=new Set();
 
-players.filter(p=>p.team===team).forEach(p=>{
-for(let r of POS_PRIORITY){
-if(p.positions.includes(r) && slots[r].length){
-const [x,y]=slots[r].shift();
+/* Önce pozisyona göre */
+POS_PRIORITY.forEach(role=>{
+players.filter(p=>p.team===team && p.positions.includes(role))
+.forEach(p=>{
+if(slots[role] && slots[role].length){
+const [x,y]=slots[role].shift();
 placePlayer(p,x,y,team);
-break;
-}}
+used.add(p.id);
+}
+});
+});
+
+/* Artanlar (çakışma yok) */
+let extraY=20;
+players.filter(p=>p.team===team && !used.has(p.id))
+.forEach(p=>{
+placePlayer(p,30,extraY,team);
+extraY+=12;
 });
 });
 }
@@ -186,6 +205,9 @@ const p=players.find(x=>x.id==el.dataset.id);
 p.team=p.team==="A"?"B":"A";
 el.classList.toggle("team-a");
 el.classList.toggle("team-b");
+
+/* saha aynalama */
+el.style.left=(1100-el.offsetLeft)+"px";
 renderUI();
 }
 
@@ -208,8 +230,8 @@ a=false;el.style.transition="all .35s";el.style.zIndex=20;
 
 function randomVest(){
 document.querySelectorAll(".player").forEach(p=>p.classList.remove("vest"));
-const team=Math.random()<0.5?"A":"B";
-document.querySelectorAll(`.team-${team.toLowerCase()}`)
+vestTeam=Math.random()<0.5?"A":"B";
+document.querySelectorAll(`.team-${vestTeam.toLowerCase()}`)
 .forEach(p=>p.classList.add("vest"));
 }
 
@@ -250,7 +272,8 @@ players=[];
 pList.innerHTML="";
 document.querySelectorAll(".player").forEach(e=>e.remove());
 localStorage.clear();
-ball.style.left="50%";ball.style.top="50%";
+ball.style.left="50%";
+ball.style.top="50%";
 }
 </script>
 </body>
