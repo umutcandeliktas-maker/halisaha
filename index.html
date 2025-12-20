@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Taktik Pro v15.1 FIXED</title>
+<title>Taktik Pro v15.1 FINAL FIX</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -89,27 +89,34 @@ let activeDrag=null,sx,sy,ix,iy;
 
 const POS_PRIORITY=["GK","DEF","MID","FWD"];
 
-/* FORMASYONLAR (derinlik %0–100) */
+/* 🔥 DÜZELTİLMİŞ FORMASYONLAR */
 const tacts={
 "3-1-2":{
 GK:[[0,50]],
-DEF:[[20,25],[20,50],[20,75]],
-MID:[[40,50]],
-FWD:[[60,35],[60,65]]
+DEF:[[20,20],[20,50],[20,80]],
+MID:[[40,50],[40,65]],   // 🔥 EKSTRA SLOT (EKSİK OYUNCU FIX)
+FWD:[[60,40],[60,70]]
 },
 "2-2-2":{
 GK:[[0,50]],
-DEF:[[20,35],[20,65]],
+DEF:[[20,30],[20,70]],
 MID:[[40,25],[40,75]],
-FWD:[[60,35],[60,65]]
+FWD:[[60,30],[60,70]]
 },
 "3-2-1":{
 GK:[[0,50]],
-DEF:[[20,25],[20,50],[20,75]],
-MID:[[40,35],[40,65]],
+DEF:[[20,20],[20,50],[20,80]],
+MID:[[40,30],[40,70]],
 FWD:[[60,50]]
 }
 };
+
+function shuffle(arr){
+for(let i=arr.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[arr[i],arr[j]]=[arr[j],arr[i]];
+}
+}
 
 function createTeams(){
 players=[];
@@ -155,14 +162,24 @@ document.querySelectorAll(".player").forEach(e=>e.remove());
 ["A","B"].forEach(team=>{
 const form=team==="A"?tA.value:tB.value;
 let slots=JSON.parse(JSON.stringify(tacts[form]));
+let teamPlayers=players.filter(p=>p.team===team);
+shuffle(teamPlayers);
 
-players.filter(p=>p.team===team).forEach(p=>{
+let fy=20;
+
+teamPlayers.forEach(p=>{
+let placed=false;
 for(let r of POS_PRIORITY){
-if(p.positions.includes(r) && slots[r].length){
+if(p.positions.includes(r) && slots[r]?.length){
 const [xp,yp]=slots[r].shift();
 placePlayer(p,xp,yp,team);
+placed=true;
 break;
 }}
+if(!placed){
+placePlayer(p,30,fy,team);
+fy+=12;
+}
 });
 });
 }
@@ -173,7 +190,6 @@ el.className=`player team-${team.toLowerCase()}`;
 el.dataset.id=p.id;
 el.innerHTML=`${p.name}<div class="text-xs">${p.positions[0]||""}</div>`;
 
-/* 🔥 YARI SAHA MATEMATİĞİ */
 const depth=45;
 const base=team==="A"?5:50;
 const finalX=base+(xp/100)*depth;
@@ -218,8 +234,8 @@ renderUI();
 
 function randomVest(){
 document.querySelectorAll(".player").forEach(p=>p.classList.remove("vest"));
-const team=Math.random()<0.5?"a":"b";
-document.querySelectorAll(".team-"+team).forEach(p=>p.classList.add("vest"));
+const t=Math.random()<0.5?"a":"b";
+document.querySelectorAll(".team-"+t).forEach(p=>p.classList.add("vest"));
 }
 
 function checkGK(){
@@ -264,4 +280,3 @@ ball.style.left="50%";ball.style.top="50%";
 </script>
 </body>
 </html>
-
