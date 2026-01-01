@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v29 - Hiyerarşik Dizilim</title>
+    <title>Taktik Pro v30 - Genişletilmiş 3-1-2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -100,13 +100,13 @@
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY;
 
+// TAKTİK KOORDİNATLARI GÜNCELLENDİ (3-1-2 İLERİ ALINDI)
 const tacticData = {
-    "3-1-2": { GK:[12,50], DEF:[[25,20],[25,50],[25,80]], MID:[[50,50]], FWD:[[80,30],[80,70]] },
-    "2-2-2": { GK:[12,50], DEF:[[25,30],[25,70]], MID:[[55,30],[55,70]], FWD:[[85,30],[85,70]] },
-    "3-2-1": { GK:[12,50], DEF:[[25,20],[25,50],[25,80]], MID:[[55,30],[55,70]], FWD:[[85,50]] }
+    "3-1-2": { GK:[12,50], DEF:[[32,20],[32,50],[32,80]], MID:[[58,50]], FWD:[[85,30],[85,70]] },
+    "2-2-2": { GK:[12,50], DEF:[[32,30],[32,70]], MID:[[58,30],[58,70]], FWD:[[85,30],[85,70]] },
+    "3-2-1": { GK:[12,50], DEF:[[32,20],[32,50],[32,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
 };
 
-// Rol Hiyerarşisi Değerleri
 const roleRank = { "GK": 1, "DEF": 2, "MID": 3, "FWD": 4 };
 
 function init() {
@@ -145,7 +145,6 @@ function togglePos(idx, pos, btn) {
     btn.classList.toggle('active');
 }
 
-// GÜNCELLENMİŞ HİYERARŞİK ÇARPIŞMA ENGELLEYİCİ
 function resolveCollisions() {
     const els = Array.from(document.querySelectorAll('.player'));
     const radius = 95;
@@ -166,20 +165,15 @@ function resolveCollisions() {
                     const angle = Math.atan2(dy, dx);
                     const push = (radius - dist);
 
-                    // Hiyerarşi Kontrolü: Düşük rütbeli (kaleye yakın) sabit kalır, yüksek rütbeli ileri itilir
                     if (rank1 > rank2) {
-                        // p1 daha "ileride" bir oyuncu (örn: MID), p2 daha "geride" (örn: DEF)
-                        // p1'i ileri (sahanın ortasına doğru) it
                         const direction = p1.dataset.team === 'a' ? 1 : -1; 
                         p1.style.left = (p1.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
                         p1.style.top = (p1.offsetTop + Math.sin(angle) * push * 0.5) + "px";
                     } else if (rank2 > rank1) {
-                        // p2'yi ileri it
                         const direction = p2.dataset.team === 'a' ? 1 : -1;
                         p2.style.left = (p2.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
                         p2.style.top = (p2.offsetTop + Math.sin(angle) * push * 0.5) + "px";
                     } else {
-                        // Aynı rütbedelerse normal itiş
                         p1.style.left = (p1.offsetLeft + Math.cos(angle) * push/2) + "px";
                         p2.style.left = (p2.offsetLeft - Math.cos(angle) * push/2) + "px";
                     }
@@ -278,7 +272,7 @@ function randomVest() {
 
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 2 }).then(canvas => {
-        const link = document.createElement('a'); link.download = 'taktik_kadro_v29.png'; link.href = canvas.toDataURL(); link.click();
+        const link = document.createElement('a'); link.download = 'taktik_pro_v30.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
 
