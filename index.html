@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v31 - Mevki Odaklı Dizilim</title>
+    <title>Taktik Pro v33 - Tam Hafıza</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -33,8 +33,8 @@
         .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; box-shadow: 0 0 20px #fbbf24; }
         .slider-group label { font-size: 10px; font-weight: 800; color: #64748b; display: block; margin-bottom: 4px; text-transform: uppercase; }
         input[type="range"] { width: 100%; accent-color: #10b981; cursor: pointer; }
-        .pos-btn { font-size: 9px; padding: 2px 4px; border-radius: 4px; background: #1e293b; transition: 0.2s; }
-        .pos-btn.active { background: #10b981; font-weight: bold; }
+        .pos-btn { font-size: 9px; padding: 2px 4px; border-radius: 4px; background: #1e293b; transition: 0.2s; color: #94a3b8; border: 1px solid #334155; }
+        .pos-btn.active { background: #10b981; font-weight: bold; color: white; border-color: #059669; }
         .mid-line { position: absolute; left: 50%; top: 0; width: 2px; height: 100%; background: white; z-index: 5; }
         .center-circle { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 140px; height: 140px; border: 2px solid white; border-radius: 50%; z-index: 4; }
     </style>
@@ -45,7 +45,7 @@
     <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-t-xl border-x border-t border-slate-800">
         <div class="flex flex-col">
             <span class="text-[10px] text-slate-500 font-bold uppercase">Toplam Oyuncu</span>
-            <select id="playerCount" onchange="initPlayerList()" class="bg-slate-800 p-1 rounded text-sm outline-none"></select>
+            <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-800 p-1 rounded text-sm outline-none"></select>
         </div>
         <button onclick="distributeAndAlign()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg font-black text-xs transition uppercase shadow-lg">KADROLARI KUR VE DİZ</button>
         <button onclick="randomVest()" class="bg-amber-500 hover:bg-amber-400 px-4 py-2 rounded-lg font-black text-xs transition uppercase shadow-lg text-slate-900">🎲 RASTGELE YELEK AT</button>
@@ -60,12 +60,9 @@
     <div class="app-layout">
         <div class="side-panel side-panel-left">
             <h3 class="text-rose-500 font-black text-xs text-center border-b border-slate-700 pb-2 uppercase tracking-widest">A Takımı</h3>
-            <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-slate-500 uppercase">Taktik</label>
-                <select id="tacticA" onchange="realignOnly('a')" class="bg-slate-800 text-xs p-2 rounded border border-slate-700 outline-none">
-                    <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                </select>
-            </div>
+            <select id="tacticA" onchange="realignOnly('a')" class="bg-slate-800 text-xs p-2 rounded border border-slate-700 outline-none">
+                <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+            </select>
             <div class="slider-group">
                 <label>Defans</label><input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-150" max="150" value="0">
                 <label class="mt-4">Orta Saha</label><input type="range" oninput="moveLine('a', 'MID', this.value)" min="-150" max="150" value="0">
@@ -81,12 +78,9 @@
 
         <div class="side-panel side-panel-right">
             <h3 class="text-blue-500 font-black text-xs text-center border-b border-slate-700 pb-2 uppercase tracking-widest">B Takımı</h3>
-            <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-bold text-slate-500 uppercase">Taktik</label>
-                <select id="tacticB" onchange="realignOnly('b')" class="bg-slate-800 text-xs p-2 rounded border border-slate-700 outline-none">
-                    <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                </select>
-            </div>
+            <select id="tacticB" onchange="realignOnly('b')" class="bg-slate-800 text-xs p-2 rounded border border-slate-700 outline-none">
+                <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+            </select>
             <div class="slider-group">
                 <label>Defans</label><input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-150" max="150" value="0">
                 <label class="mt-4">Orta Saha</label><input type="range" oninput="moveLine('b', 'MID', this.value)" min="-150" max="150" value="0">
@@ -97,6 +91,7 @@
 </div>
 
 <script>
+// ANA VERİ HAVUZU (Sayfa açık kaldığı sürece bu dizi güncellenir ama sıfırlanmaz)
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY;
 
@@ -114,34 +109,63 @@ function init() {
         let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
         if(i===12) opt.selected = true; sel.appendChild(opt);
     }
-    initPlayerList();
+    updatePlayerList();
 }
 
-function initPlayerList() {
-    const count = document.getElementById('playerCount').value;
+function updatePlayerList() {
+    const count = parseInt(document.getElementById('playerCount').value);
+    
+    // Eğer havuzda yeterli oyuncu yoksa, eksikleri ekle
+    if (players.length < count) {
+        for (let i = players.length; i < count; i++) {
+            players.push({
+                id: i,
+                name: `Oyuncu ${i + 1}`,
+                quality: 5,
+                positions: i < 2 ? ["GK"] : ["MID"] // Varsayılan mevkiler
+            });
+        }
+    }
+    // NOT: Listeyi azaltırsak veri kaybı olmaması için havuzdan silmiyoruz, 
+    // sadece render kısmında 'count' kadarını gösteriyoruz.
+    
+    renderInputs(count);
+}
+
+function renderInputs(count) {
     const container = document.getElementById('playerInputs');
-    container.innerHTML = ""; players = [];
-    for(let i=0; i<count; i++) {
-        players.push({ id:i, name:`P${i+1}`, quality:5, positions: i<2 ? ["GK"] : ["MID"] });
+    container.innerHTML = "";
+    
+    // Sadece seçilen sayı kadarını göster ama havuzdaki verileri kullan
+    for (let i = 0; i < count; i++) {
+        let p = players[i];
         container.innerHTML += `<div class="bg-slate-800 p-2 rounded border border-slate-700">
-                <input type="text" value="Oyuncu ${i+1}" oninput="players[${i}].name=this.value" class="w-full bg-slate-900 p-1 rounded text-[10px] mb-2 outline-none">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[9px] font-bold text-emerald-400">KALİTE:</span>
-                    <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-slate-900 text-[10px] rounded p-0.5">
-                        ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${n===5?'selected':''}>${n}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="flex flex-wrap gap-1">
-                    ${["GK","DEF","MID","FWD"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="pos-btn ${players[i].positions.includes(pos)?'active':''}"> ${pos} </button>`).join('')}
-                </div>
-            </div>`;
+            <input type="text" value="${p.name}" oninput="players[${i}].name=this.value" class="w-full bg-slate-900 p-1 rounded text-[10px] mb-2 outline-none">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[9px] font-bold text-emerald-400">KALİTE:</span>
+                <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-slate-900 text-[10px] rounded p-0.5">
+                    ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${p.quality===n?'selected':''}>${n}</option>`).join('')}
+                </select>
+            </div>
+            <div class="flex flex-wrap gap-1">
+                ${["GK","DEF","MID","FWD"].map(pos => `
+                    <button onclick="togglePos(${i},'${pos}',this)" class="pos-btn ${p.positions.includes(pos)?'active':''}"> 
+                        ${pos} 
+                    </button>`).join('')}
+            </div>
+        </div>`;
     }
 }
 
 function togglePos(idx, pos, btn) {
     let p = players[idx];
-    p.positions.includes(pos) ? p.positions = p.positions.filter(x => x !== pos) : p.positions.push(pos);
-    btn.classList.toggle('active');
+    if (p.positions.includes(pos)) {
+        p.positions = p.positions.filter(x => x !== pos);
+        btn.classList.remove('active');
+    } else {
+        p.positions.push(pos);
+        btn.classList.add('active');
+    }
 }
 
 function resolveCollisions() {
@@ -164,11 +188,9 @@ function resolveCollisions() {
                     if (rank1 > rank2) {
                         const direction = p1.dataset.team === 'a' ? 1 : -1; 
                         p1.style.left = (p1.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
-                        p1.style.top = (p1.offsetTop + Math.sin(angle) * push * 0.5) + "px";
                     } else if (rank2 > rank1) {
                         const direction = p2.dataset.team === 'a' ? 1 : -1;
                         p2.style.left = (p2.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
-                        p2.style.top = (p2.offsetTop + Math.sin(angle) * push * 0.5) + "px";
                     } else {
                         p1.style.left = (p1.offsetLeft + Math.cos(angle) * push/2) + "px";
                         p2.style.left = (p2.offsetLeft - Math.cos(angle) * push/2) + "px";
@@ -180,15 +202,24 @@ function resolveCollisions() {
 }
 
 function distributeAndAlign() {
-    let pool = [...players].sort(() => Math.random() - 0.5);
+    const count = parseInt(document.getElementById('playerCount').value);
+    // Havuzdan sadece o an seçili olan sayı kadar oyuncuyu al
+    let activePool = players.slice(0, count).sort(() => Math.random() - 0.5);
+    
     let teamA = [], teamB = [];
-    let gks = pool.filter(p => p.positions.includes("GK"));
-    if(gks.length >= 2) { teamA.push(gks[0]); teamB.push(gks[1]); pool = pool.filter(p => p.id !== gks[0].id && p.id !== gks[1].id); }
-    pool.sort((a,b) => b.quality - a.quality).forEach(p => {
+    let gks = activePool.filter(p => p.positions.includes("GK"));
+    
+    if(gks.length >= 2) { 
+        teamA.push(gks[0]); teamB.push(gks[1]); 
+        activePool = activePool.filter(p => p.id !== gks[0].id && p.id !== gks[1].id); 
+    }
+    
+    activePool.sort((a,b) => b.quality - a.quality).forEach(p => {
         let sumA = teamA.reduce((s,x)=>s+x.quality,0);
         let sumB = teamB.reduce((s,x)=>s+x.quality,0);
-        (teamA.length < players.length/2 && (sumA <= sumB || teamB.length >= players.length/2)) ? teamA.push(p) : teamB.push(p);
+        (teamA.length < count/2 && (sumA <= sumB || teamB.length >= count/2)) ? teamA.push(p) : teamB.push(p);
     });
+    
     document.querySelectorAll('.player').forEach(e => e.remove());
     alignTeam(teamA, 'a', document.getElementById('tacticA').value);
     alignTeam(teamB, 'b', document.getElementById('tacticB').value);
@@ -205,7 +236,7 @@ function realignOnly(teamName) {
         let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
         let role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
         el.dataset.role = role;
-        el.querySelector('.role-label').innerText = role; // Mevki yazısını güncelle
+        el.querySelector('.role-label').innerText = role;
         el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
     });
     setTimeout(resolveCollisions, 600);
@@ -271,7 +302,7 @@ function randomVest() {
 
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 2 }).then(canvas => {
-        const link = document.createElement('a'); link.download = 'taktik_pro_v31.png'; link.href = canvas.toDataURL(); link.click();
+        const link = document.createElement('a'); link.download = 'taktik_pro_v33.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
 
