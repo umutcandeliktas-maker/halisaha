@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v30 - Genişletilmiş 3-1-2</title>
+    <title>Taktik Pro v31 - Mevki Odaklı Dizilim</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -100,7 +100,6 @@
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY;
 
-// TAKTİK KOORDİNATLARI GÜNCELLENDİ (3-1-2 İLERİ ALINDI)
 const tacticData = {
     "3-1-2": { GK:[12,50], DEF:[[32,20],[32,50],[32,80]], MID:[[58,50]], FWD:[[85,30],[85,70]] },
     "2-2-2": { GK:[12,50], DEF:[[32,30],[32,70]], MID:[[58,30],[58,70]], FWD:[[85,30],[85,70]] },
@@ -148,7 +147,6 @@ function togglePos(idx, pos, btn) {
 function resolveCollisions() {
     const els = Array.from(document.querySelectorAll('.player'));
     const radius = 95;
-
     for(let k=0; k<5; k++) {
         els.forEach(p1 => {
             els.forEach(p2 => {
@@ -158,13 +156,11 @@ function resolveCollisions() {
                 const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
                 const dy = (r1.top + r1.height/2) - (r2.top + r2.height/2);
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                
                 if (dist < radius) {
                     const rank1 = roleRank[p1.dataset.role] || 0;
                     const rank2 = roleRank[p2.dataset.role] || 0;
                     const angle = Math.atan2(dy, dx);
                     const push = (radius - dist);
-
                     if (rank1 > rank2) {
                         const direction = p1.dataset.team === 'a' ? 1 : -1; 
                         p1.style.left = (p1.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
@@ -207,7 +203,9 @@ function realignOnly(teamName) {
     teamPlayers.forEach((el, i) => {
         let [rawX, rawY] = slots[i] || [50, 50];
         let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
-        el.dataset.role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
+        let role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
+        el.dataset.role = role;
+        el.querySelector('.role-label').innerText = role; // Mevki yazısını güncelle
         el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
     });
     setTimeout(resolveCollisions, 600);
@@ -217,10 +215,11 @@ function alignTeam(teamArr, teamName, tacKey) {
     const tac = tacticData[tacKey];
     let slots = [tac.GK, ...tac.DEF, ...tac.MID, ...tac.FWD];
     teamArr.forEach((p, i) => {
+        let role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
         const el = document.createElement('div');
         el.className = `player team-${teamName}`;
-        el.innerHTML = `<div>${p.name}</div><div class="text-[8px] opacity-70">★ ${p.quality}</div>`;
-        el.dataset.role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
+        el.innerHTML = `<div>${p.name}</div><div class="role-label text-[8px] opacity-70 tracking-tighter">${role}</div>`;
+        el.dataset.role = role;
         el.dataset.team = teamName;
         let [rawX, rawY] = slots[i] || [50, 50];
         let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
@@ -272,7 +271,7 @@ function randomVest() {
 
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 2 }).then(canvas => {
-        const link = document.createElement('a'); link.download = 'taktik_pro_v30.png'; link.href = canvas.toDataURL(); link.click();
+        const link = document.createElement('a'); link.download = 'taktik_pro_v31.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
 
