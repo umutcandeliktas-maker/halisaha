@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v28 - Dinamik Diziliş</title>
+    <title>Taktik Pro v29 - Hiyerarşik Dizilim</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -26,7 +26,7 @@
             cursor: move; user-select: none; z-index: 20;
             box-shadow: 0 10px 15px rgba(0,0,0,0.5);
             transform: translate(-50%, -50%);
-            transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
         .team-a { background: #be123c; border: 2px solid #4c0519; }
         .team-b { background: #1d4ed8; border: 2px solid #1e3a8a; }
@@ -106,10 +106,13 @@ const tacticData = {
     "3-2-1": { GK:[12,50], DEF:[[25,20],[25,50],[25,80]], MID:[[55,30],[55,70]], FWD:[[85,50]] }
 };
 
+// Rol Hiyerarşisi Değerleri
+const roleRank = { "GK": 1, "DEF": 2, "MID": 3, "FWD": 4 };
+
 function init() {
     const sel = document.getElementById('playerCount');
     for(let i=2; i<=22; i+=2) {
-        let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu (${i/2}v${i/2})`;
+        let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
         if(i===12) opt.selected = true; sel.appendChild(opt);
     }
     initPlayerList();
@@ -121,8 +124,8 @@ function initPlayerList() {
     container.innerHTML = ""; players = [];
     for(let i=0; i<count; i++) {
         players.push({ id:i, name:`P${i+1}`, quality:5, positions: i<2 ? ["GK"] : ["MID"] });
-        container.innerHTML += `<div class="bg-slate-800 p-2 rounded border border-slate-700 shadow-md">
-                <input type="text" value="Oyuncu ${i+1}" oninput="players[${i}].name=this.value" class="w-full bg-slate-900 p-1 rounded text-[10px] mb-2 outline-none border border-slate-700">
+        container.innerHTML += `<div class="bg-slate-800 p-2 rounded border border-slate-700">
+                <input type="text" value="Oyuncu ${i+1}" oninput="players[${i}].name=this.value" class="w-full bg-slate-900 p-1 rounded text-[10px] mb-2 outline-none">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[9px] font-bold text-emerald-400">KALİTE:</span>
                     <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-slate-900 text-[10px] rounded p-0.5">
@@ -142,11 +145,12 @@ function togglePos(idx, pos, btn) {
     btn.classList.toggle('active');
 }
 
+// GÜNCELLENMİŞ HİYERARŞİK ÇARPIŞMA ENGELLEYİCİ
 function resolveCollisions() {
     const els = Array.from(document.querySelectorAll('.player'));
-    const radius = 90;
-    for(let k=0; k<8; k++) {
-        let moved = false;
+    const radius = 95;
+
+    for(let k=0; k<5; k++) {
         els.forEach(p1 => {
             els.forEach(p2 => {
                 if (p1 === p2) return;
@@ -155,18 +159,33 @@ function resolveCollisions() {
                 const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
                 const dy = (r1.top + r1.height/2) - (r2.top + r2.height/2);
                 const dist = Math.sqrt(dx*dx + dy*dy);
+                
                 if (dist < radius) {
+                    const rank1 = roleRank[p1.dataset.role] || 0;
+                    const rank2 = roleRank[p2.dataset.role] || 0;
                     const angle = Math.atan2(dy, dx);
-                    const push = (radius - dist) / 2;
-                    p1.style.left = (p1.offsetLeft + Math.cos(angle) * push) + "px";
-                    p1.style.top = (p1.offsetTop + Math.sin(angle) * push) + "px";
-                    p2.style.left = (p2.offsetLeft - Math.cos(angle) * push) + "px";
-                    p2.style.top = (p2.offsetTop - Math.sin(angle) * push) + "px";
-                    moved = true;
+                    const push = (radius - dist);
+
+                    // Hiyerarşi Kontrolü: Düşük rütbeli (kaleye yakın) sabit kalır, yüksek rütbeli ileri itilir
+                    if (rank1 > rank2) {
+                        // p1 daha "ileride" bir oyuncu (örn: MID), p2 daha "geride" (örn: DEF)
+                        // p1'i ileri (sahanın ortasına doğru) it
+                        const direction = p1.dataset.team === 'a' ? 1 : -1; 
+                        p1.style.left = (p1.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
+                        p1.style.top = (p1.offsetTop + Math.sin(angle) * push * 0.5) + "px";
+                    } else if (rank2 > rank1) {
+                        // p2'yi ileri it
+                        const direction = p2.dataset.team === 'a' ? 1 : -1;
+                        p2.style.left = (p2.offsetLeft + Math.abs(Math.cos(angle) * push) * direction) + "px";
+                        p2.style.top = (p2.offsetTop + Math.sin(angle) * push * 0.5) + "px";
+                    } else {
+                        // Aynı rütbedelerse normal itiş
+                        p1.style.left = (p1.offsetLeft + Math.cos(angle) * push/2) + "px";
+                        p2.style.left = (p2.offsetLeft - Math.cos(angle) * push/2) + "px";
+                    }
                 }
             });
         });
-        if(!moved) break;
     }
 }
 
@@ -183,24 +202,19 @@ function distributeAndAlign() {
     document.querySelectorAll('.player').forEach(e => e.remove());
     alignTeam(teamA, 'a', document.getElementById('tacticA').value);
     alignTeam(teamB, 'b', document.getElementById('tacticB').value);
-    setTimeout(resolveCollisions, 100);
+    setTimeout(resolveCollisions, 200);
 }
 
-// TAKTİK DEĞİŞTİĞİNDE ÇALIŞAN ÖZEL FONKSİYON
 function realignOnly(teamName) {
     const tacKey = document.getElementById('tactic' + teamName.toUpperCase()).value;
     const tac = tacticData[tacKey];
     const teamPlayers = Array.from(document.querySelectorAll(`.team-${teamName}`));
     let slots = [tac.GK, ...tac.DEF, ...tac.MID, ...tac.FWD];
-
     teamPlayers.forEach((el, i) => {
         let [rawX, rawY] = slots[i] || [50, 50];
         let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
-        
         el.dataset.role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
-        el.style.left = finalX + "%";
-        el.style.top = rawY + "%";
-        el.dataset.baseX = finalX;
+        el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
     });
     setTimeout(resolveCollisions, 600);
 }
@@ -228,8 +242,7 @@ function makeDraggable(el) {
         const ev = e.touches ? e.touches[0] : e;
         startX = ev.clientX; startY = ev.clientY;
         initialX = el.offsetLeft; initialY = el.offsetTop;
-        el.style.zIndex = 1000;
-        el.style.transition = "none";
+        el.style.zIndex = 1000; el.style.transition = "none";
     };
     el.onmousedown = start; el.ontouchstart = start;
 }
@@ -242,13 +255,7 @@ window.onmousemove = window.ontouchmove = (e) => {
     resolveCollisions();
 };
 
-window.onmouseup = window.ontouchend = () => { 
-    if(activeDrag) {
-        activeDrag.style.zIndex = 20;
-        activeDrag.style.transition = "left 0.5s ease-out, top 0.5s ease-out";
-    }
-    activeDrag = null; 
-};
+window.onmouseup = window.ontouchend = () => { if(activeDrag) { activeDrag.style.zIndex = 20; activeDrag.style.transition = "left 0.4s ease-out, top 0.4s ease-out"; } activeDrag = null; };
 
 function moveLine(team, role, val) {
     const shift = parseInt(val);
@@ -271,8 +278,7 @@ function randomVest() {
 
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 2 }).then(canvas => {
-        const link = document.createElement('a'); link.download = 'taktik_pro_v28.png';
-        link.href = canvas.toDataURL(); link.click();
+        const link = document.createElement('a'); link.download = 'taktik_kadro_v29.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
 
