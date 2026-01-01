@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halı Saha Taktik Pro v22.5</title>
+    <title>Halı Saha Taktik Pro v23 - Bağımsız Kontrol</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         body { background: #020617; color: white; font-family: sans-serif; overflow-x: hidden; touch-action: none; }
-        .field-container { width: 100%; overflow-x: auto; padding: 40px 20px; }
+        .field-container { width: 100%; overflow-x: auto; padding: 20px; }
         .field { 
             width: 1000px; height: 600px; background: #14532d;
             margin: 0 auto; border: 4px solid white; position: relative;
@@ -21,71 +21,64 @@
             width: 140px; height: 140px; border: 2px solid white; border-radius: 50%; z-index: 4;
         }
         .goal { position: absolute; width: 30px; height: 140px; border: 3px solid white; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); }
-        .goal-left { left: -30px; border-right: none; border-radius: 8px 0 0 8px; }
-        .goal-right { right: -30px; border-left: none; border-radius: 0 8px 8px 0; }
+        .goal-left { left: -30px; border-right: none; }
+        .goal-right { right: -30px; border-left: none; }
 
         .player {
-            position: absolute; width: 80px; padding: 6px; border-radius: 8px;
+            position: absolute; width: 85px; padding: 6px; border-radius: 8px;
             text-align: center; font-weight: bold; font-size: 10px;
             cursor: move; user-select: none; z-index: 20;
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             transform: translate(-50%, -50%);
         }
-        .team-a { background: #be123c; color: white; border: 1px solid #4c0519; }
-        .team-b { background: #1d4ed8; color: white; border: 1px solid #1e3a8a; }
+        .team-a { background: #be123c; border: 1px solid #4c0519; }
+        .team-b { background: #1d4ed8; border: 1px solid #1e3a8a; }
         .vest-a { outline: 4px solid #fbbf24; outline-offset: 2px; }
         .vest-b { outline: 4px solid #4ade80; outline-offset: 2px; }
-        .p-power { font-size: 9px; display: block; opacity: 0.8; margin-top: 2px; }
+        .p-power { font-size: 9px; display: block; opacity: 0.8; }
+        
+        .control-box { background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 12px; border-radius: 12px; }
+        input[type="range"] { height: 6px; border-radius: 5px; background: #334155; accent-color: #10b981; }
     </style>
 </head>
 <body class="p-4">
 
 <div class="max-w-7xl mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/90 p-4 rounded-xl mb-4 border border-slate-700 shadow-2xl">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 bg-slate-900 p-4 rounded-xl border border-slate-700">
         <div>
-            <label class="block text-[10px] font-black text-emerald-500 uppercase">Kişi Sayısı</label>
+            <label class="text-[10px] font-black text-emerald-400 uppercase">Kişi Sayısı</label>
             <select id="playerCount" onchange="initPlayerList()" class="w-full bg-slate-800 border border-slate-700 p-2 rounded text-sm mt-1"></select>
         </div>
-        <div>
-            <label class="block text-[10px] font-black text-rose-500 uppercase">A Taktik (Sol)</label>
-            <select id="tacticA" class="w-full bg-slate-800 p-2 rounded text-sm mt-1">
-                <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-            </select>
-        </div>
-        <div>
-            <label class="block text-[10px] font-black text-blue-500 uppercase">B Taktik (Sağ)</label>
-            <select id="tacticB" class="w-full bg-slate-800 p-2 rounded text-sm mt-1">
-                <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-            </select>
-        </div>
-        <div class="flex items-end gap-2">
-            <button onclick="distributeAndAlign()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 p-2 rounded font-black text-xs h-10 transition">KADRO KUR VE DİZ</button>
+        <div class="flex items-end gap-2 md:col-span-3">
+            <button onclick="distributeAndAlign()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 p-2 rounded font-black text-xs h-10 transition">KADROLARI OLUŞTUR VE YARI SAHAYA DİZ</button>
             <button onclick="exportImage()" class="bg-indigo-600 p-2 rounded h-10 w-10">📸</button>
             <button onclick="location.reload()" class="bg-rose-600 p-2 rounded h-10 w-10">🗑️</button>
         </div>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="control-box border-l-4 border-l-rose-600">
+            <h3 class="text-rose-500 font-black text-xs mb-3 flex justify-between">A TAKIMI (SOL) <button onclick="toggleVest('a')" class="text-[9px] bg-rose-900 px-2 py-1 rounded">YELEK</button></h3>
+            <select id="tacticA" class="w-full bg-slate-800 p-2 rounded text-xs mb-3 border border-slate-700 outline-none"><option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option></select>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold"><span>DEF</span> <input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-100" max="100" value="0" class="w-2/3"></div>
+                <div class="flex items-center justify-between text-[10px] font-bold"><span>MID</span> <input type="range" oninput="moveLine('a', 'MID', this.value)" min="-100" max="100" value="0" class="w-2/3"></div>
+                <div class="flex items-center justify-between text-[10px] font-bold"><span>FWD</span> <input type="range" oninput="moveLine('a', 'FWD', this.value)" min="-100" max="100" value="0" class="w-2/3"></div>
+            </div>
+        </div>
+
+        <div class="control-box border-l-4 border-l-blue-600">
+            <h3 class="text-blue-500 font-black text-xs mb-3 flex justify-between">B TAKIMI (SAĞ) <button onclick="toggleVest('b')" class="text-[9px] bg-blue-900 px-2 py-1 rounded">YELEK</button></h3>
+            <select id="tacticB" class="w-full bg-slate-800 p-2 rounded text-xs mb-3 border border-slate-700 outline-none"><option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option></select>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold"><span>DEF</span> <input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-100" max="100" value="0" class="w-2/3"></div>
+                <div class="flex items-center justify-between text-[10px] font-bold"><span>MID</span> <input type="range" oninput="moveLine('b', 'MID', this.value)" min="-100" max="100" value="0" class="w-2/3"></div>
+                <div class="flex items-center justify-between text-[10px] font-bold"><span>FWD</span> <input type="range" oninput="moveLine('b', 'FWD', this.value)" min="-100" max="100" value="0" class="w-2/3"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="playerInputs" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4 max-h-40 overflow-y-auto p-2 bg-slate-950/50 rounded-lg shadow-inner"></div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-900 p-4 rounded-lg mb-4 border border-slate-800">
-        <div class="flex flex-col gap-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">Defans Hattı</span>
-            <input type="range" oninput="moveLine('DEF', this.value)" min="-120" max="120" value="0" class="w-full accent-emerald-500">
-        </div>
-        <div class="flex flex-col gap-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">Orta Saha Hattı</span>
-            <input type="range" oninput="moveLine('MID', this.value)" min="-120" max="120" value="0" class="w-full accent-emerald-500">
-        </div>
-        <div class="flex flex-col gap-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">Forvet Hattı</span>
-            <input type="range" oninput="moveLine('FWD', this.value)" min="-120" max="120" value="0" class="w-full accent-emerald-500">
-        </div>
-    </div>
-
-    <div class="flex gap-2 mb-4 justify-center">
-        <button onclick="toggleVest('a')" class="bg-rose-900/40 border border-rose-500 text-rose-200 px-6 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">A Takımı Yelek</button>
-        <button onclick="toggleVest('b')" class="bg-blue-900/40 border border-blue-500 text-blue-200 px-6 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">B Takımı Yelek</button>
-    </div>
 
     <div class="field-container">
         <div id="field" class="field">
@@ -102,8 +95,7 @@
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY;
 
-// Yarı sahada 50 birimlik alan için taktiksel x-y koordinatları
-const tactics = {
+const tacticData = {
     "3-1-2": { GK:[8,50], DEF:[[22,20],[22,50],[22,80]], MID:[[45,50]], FWD:[[80,30],[80,70]] },
     "2-2-2": { GK:[8,50], DEF:[[22,30],[22,70]], MID:[[50,30],[50,70]], FWD:[[82,30],[82,70]] },
     "3-2-1": { GK:[8,50], DEF:[[22,20],[22,50],[22,80]], MID:[[52,30],[52,70]], FWD:[[85,50]] }
@@ -123,84 +115,46 @@ function initPlayerList() {
     const container = document.getElementById('playerInputs');
     container.innerHTML = ""; players = [];
     for(let i=0; i<count; i++) {
-        players.push({ id:i, name:`Oyuncu ${i+1}`, power:5, positions: i<2 ? ["GK"] : ["MID"], team:null });
-        container.innerHTML += `
-            <div class="bg-slate-900 p-2 rounded border border-slate-800 text-[10px]">
-                <input type="text" value="Oyuncu ${i+1}" oninput="players[${i}].name=this.value" class="w-full bg-slate-950 p-1 rounded mb-1 outline-none border border-slate-800 focus:border-emerald-500">
-                <div class="flex items-center gap-1 mb-1">
-                    <span class="opacity-50">⚡</span><input type="range" min="1" max="10" value="5" oninput="players[${i}].power=parseInt(this.value)" class="w-full accent-emerald-600">
-                </div>
-                <div class="flex flex-wrap gap-1">
-                    ${["GK","DEF","MID","FWD"].map(pos=> `<button onclick="togglePos(${i},'${pos}',this)" class="px-1 rounded ${players[i].positions.includes(pos)?'bg-emerald-600 font-bold':'bg-slate-800 opacity-60'}">${pos}</button>`).join('')}
-                </div>
-            </div>`;
+        players.push({ id:i, name:`Oyuncu ${i+1}`, power:5, positions: i<2 ? ["GK"] : ["MID"] });
+        container.innerHTML += `<div class="bg-slate-900 p-2 rounded border border-slate-800 text-[10px]"><input type="text" value="Oyuncu ${i+1}" oninput="players[${i}].name=this.value" class="w-full bg-slate-950 p-1 rounded mb-1 outline-none border border-slate-800 focus:border-emerald-500"><div class="flex items-center gap-1 mb-1"><input type="range" min="1" max="10" value="5" oninput="players[${i}].power=parseInt(this.value)" class="w-full accent-emerald-600"></div><div class="flex flex-wrap gap-1">${["GK","DEF","MID","FWD"].map(pos=> `<button onclick="togglePos(${i},'${pos}',this)" class="px-1 rounded ${players[i].positions.includes(pos)?'bg-emerald-600':'bg-slate-800'}">${pos}</button>`).join('')}</div></div>`;
     }
 }
 
 function togglePos(id, pos, btn) {
     let p = players[id];
     p.positions.includes(pos) ? p.positions = p.positions.filter(x=>x!==pos) : p.positions.push(pos);
-    btn.classList.toggle('bg-emerald-600'); btn.classList.toggle('font-bold'); btn.classList.toggle('opacity-60');
+    btn.classList.toggle('bg-emerald-600'); btn.classList.toggle('bg-slate-800');
 }
 
 function distributeAndAlign() {
     let pool = [...players].sort(() => Math.random() - 0.5);
     let teamA = [], teamB = [];
-    
-    // Kalecileri takımlara ata
     let gks = pool.filter(p => p.positions.includes("GK"));
-    if(gks.length >= 2) {
-        teamA.push(gks[0]); teamB.push(gks[1]);
-        pool = pool.filter(p => p.id !== gks[0].id && p.id !== gks[1].id);
-    }
-    
-    // Güç dengesi dağıtımı
+    if(gks.length >= 2) { teamA.push(gks[0]); teamB.push(gks[1]); pool = pool.filter(p => p.id !== gks[0].id && p.id !== gks[1].id); }
     pool.sort((a,b) => b.power - a.power).forEach(p => {
         let sumA = teamA.reduce((s,x)=>s+x.power,0);
         let sumB = teamB.reduce((s,x)=>s+x.power,0);
         (teamA.length < players.length/2 && (sumA <= sumB || teamB.length >= players.length/2)) ? teamA.push(p) : teamB.push(p);
     });
-
     document.querySelectorAll('.player').forEach(e => e.remove());
-    alignTeam(teamA, 'A', document.getElementById('tacticA').value);
-    alignTeam(teamB, 'B', document.getElementById('tacticB').value);
+    alignTeam(teamA, 'a', document.getElementById('tacticA').value);
+    alignTeam(teamB, 'b', document.getElementById('tacticB').value);
 }
 
 function alignTeam(teamArr, teamName, tacKey) {
-    const tac = tactics[tacKey];
-    
-    // Mevki önceliğine göre sırala
-    let sortedPlayers = [...teamArr].sort((a, b) => {
-        const order = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
-        return order[a.positions[0]] - order[b.positions[0]];
-    });
-
+    const tac = tacticData[tacKey];
+    let sorted = [...teamArr].sort((a, b) => { const o = { GK:0, DEF:1, MID:2, FWD:3 }; return o[a.positions[0]] - o[b.positions[0]]; });
     let slots = [tac.GK, ...tac.DEF, ...tac.MID, ...tac.FWD];
 
-    sortedPlayers.forEach((p, i) => {
+    sorted.forEach((p, i) => {
         const el = document.createElement('div');
-        el.className = `player team-${teamName.toLowerCase()}`;
-        el.id = `p-${p.id}`;
+        el.className = `player team-${teamName}`;
         el.innerHTML = `${p.name} <span class="p-power">⚡${p.power}</span>`;
-        
-        // Rol etiketleme (Kaydırıcılar için)
         let role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
-        el.dataset.role = role;
-
+        el.dataset.role = role; el.dataset.team = teamName;
         let [rawX, rawY] = slots[i] || [50, 50];
-        
-        // TAM SİMETRİ HESABI (50/50 Çizgisi)
-        let finalX;
-        if(teamName === 'A') {
-            finalX = (rawX / 100) * 50; // Sol taraf: 0-50 arası
-        } else {
-            finalX = 100 - ((rawX / 100) * 50); // Sağ taraf: 100-50 arası
-        }
-
-        el.style.left = finalX + "%";
-        el.style.top = rawY + "%";
-        el.dataset.baseX = finalX;
-
+        let finalX = teamName === 'a' ? (rawX / 100) * 50 : 100 - ((rawX / 100) * 50);
+        el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
         makeDraggable(el);
         document.getElementById('field').appendChild(el);
     });
@@ -224,35 +178,23 @@ window.onmousemove = window.ontouchmove = (e) => {
     activeDrag.style.top = (initialY + (ev.clientY - startY)) + "px";
 };
 
-window.onmouseup = window.ontouchend = () => {
-    if(activeDrag) {
-        activeDrag.style.zIndex = 20;
-        // Yeni konumu % olarak kaydet (slider uyumu için)
-        activeDrag.dataset.baseX = (activeDrag.offsetLeft / 1000) * 100;
-    }
-    activeDrag = null;
-};
+window.onmouseup = window.ontouchend = () => { if(activeDrag) activeDrag.style.zIndex = 20; activeDrag = null; };
 
-function moveLine(role, val) {
+function moveLine(team, role, val) {
     const shift = parseInt(val);
     document.querySelectorAll('.player').forEach(el => {
-        if(el.dataset.role === role) {
+        if(el.dataset.team === team && el.dataset.role === role) {
             let base = parseFloat(el.dataset.baseX);
             el.style.left = `calc(${base}% + ${shift}px)`;
         }
     });
 }
 
-function toggleVest(t) {
-    document.querySelectorAll(`.team-${t}`).forEach(el => el.classList.toggle(`vest-${t}`));
-}
+function toggleVest(t) { document.querySelectorAll(`.team-${t}`).forEach(el => el.classList.toggle(`vest-${t}`)); }
 
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 2 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'kadro_50-50.png';
-        link.href = canvas.toDataURL();
-        link.click();
+        const link = document.createElement('a'); link.download = 'taktik_pro.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
 
