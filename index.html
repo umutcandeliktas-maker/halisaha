@@ -3,127 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v35 - Full Kontrol</title>
+    <title>Taktik Pro v35 - Ultra Freedom</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        :root { --master-scale: 1; }
-        body { background: #070b14; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { background: #070b14; color: #f8fafc; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
         
-        /* ÖLÇEKLENEBİLİR KONTEYNER */
-        #main-wrapper { transform: scale(var(--master-scale)); transform-origin: top center; transition: transform 0.2s; }
+        /* Sürüklenebilir Menü Genel Stili */
+        .draggable-menu {
+            position: absolute; background: rgba(15, 23, 42, 0.95); 
+            border: 1px solid #334155; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50;
+            backdrop-filter: blur(10px); min-width: 200px;
+        }
+        
+        /* Menü Başlığı (Taşıma Alanı) */
+        .menu-header {
+            padding: 10px; background: rgba(30, 41, 59, 0.8);
+            border-bottom: 1px solid #334155; border-radius: 12px 12px 0 0;
+            cursor: move; display: flex; justify-content: space-between; align-items: center;
+        }
 
-        /* SAHA VE KALE ÇİZGİLERİ */
+        /* SAHA */
         .field { 
-            width: 1000px; height: 600px; background: #15803d; border: 4px solid #fff; position: relative;
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.05) 200px);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5); margin: 0 auto;
+            width: 900px; height: 550px; background: #15803d; border: 4px solid #fff; position: relative;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 90px, rgba(0,0,0,0.05) 90px, rgba(0,0,0,0.05) 180px);
         }
-        /* Ceza Sahaları */
-        .box-left { position: absolute; left: 0; top: 150px; width: 160px; height: 300px; border: 4px solid #fff; border-left: 0; }
-        .box-right { position: absolute; right: 0; top: 150px; width: 160px; height: 300px; border: 4px solid #fff; border-right: 0; }
-        /* Kale İçleri (6 Pas) */
-        .goal-left { position: absolute; left: 0; top: 220px; width: 60px; height: 160px; border: 4px solid #fff; border-left: 0; }
-        .goal-right { position: absolute; right: 0; top: 220px; width: 60px; height: 160px; border: 4px solid #fff; border-right: 0; }
-
-        .player {
-            position: absolute; width: 85px; padding: 6px; border-radius: 8px;
-            text-align: center; font-weight: 800; font-size: 11px;
-            cursor: grab; user-select: none; z-index: 20; transform: translate(-50%, -50%);
-            transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), top 0.4s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-        }
+        .box-left { position: absolute; left: 0; top: 137px; width: 140px; height: 275px; border: 3px solid #fff; border-left:0; }
+        .box-right { position: absolute; right: 0; top: 137px; width: 140px; height: 275px; border: 3px solid #fff; border-right:0; }
         
+        /* OYUNCU */
+        .player {
+            position: absolute; width: 75px; padding: 5px; border-radius: 6px;
+            text-align: center; font-weight: 800; font-size: 10px;
+            cursor: grab; z-index: 20; transform: translate(-50%, -50%);
+            transition: left 0.3s ease-out, top 0.3s ease-out; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
         .team-a { background: #e11d48; border: 2px solid #fff; color: white; }
         .team-b { background: #2563eb; border: 2px solid #fff; color: white; }
-        .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; box-shadow: 0 0 20px #fbbf24; }
+        .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; }
 
-        .field-container { padding: 40px; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        #field-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
     </style>
 </head>
-<body class="bg-slate-950">
+<body>
 
-<div class="fixed top-0 left-0 w-full z-50 bg-slate-900/90 backdrop-blur border-b border-slate-800 p-2 flex items-center justify-between px-6">
-    <div class="flex items-center gap-4">
-        <span class="text-xs font-bold text-emerald-400">GENEL ÖLÇEK:</span>
-        <input type="range" min="0.5" max="1.5" step="0.05" value="1" oninput="document.documentElement.style.setProperty('--master-scale', this.value)" class="w-48 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+<div id="field-wrapper">
+    <div id="field" class="field rounded-sm shadow-2xl">
+        <div class="absolute left-1/2 top-0 w-0.5 h-full bg-white/50"></div>
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/50 rounded-full"></div>
+        <div class="box-left"></div><div class="box-right"></div>
+        <div id="ball" class="absolute w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-grab z-[100] text-xl transform -translate-x-1/2 -translate-y-1/2" style="left:50%; top:50%">⚽</div>
     </div>
-    <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Taktik Pro v35 - Scale Engine</div>
 </div>
 
-<div id="main-wrapper" class="pt-16">
-    <div class="max-w-[1440px] mx-auto p-4">
-        <div class="bg-slate-900 p-4 rounded-t-3xl border border-slate-800 flex flex-wrap items-center gap-6 shadow-2xl">
-            <div class="flex flex-col">
-                <label class="text-[10px] text-slate-500 font-black mb-1">KADRO SİZE</label>
-                <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-800 text-white p-2 rounded-xl text-sm border border-slate-700"></select>
-            </div>
-            
-            <div class="flex gap-3">
-                <button onclick="distributeAndAlign()" class="bg-emerald-600 hover:bg-emerald-500 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-tighter shadow-lg transition-all active:scale-90">Kadroları Kur</button>
-                <button onclick="randomVest()" class="bg-amber-500 hover:bg-amber-400 text-black px-8 py-3 rounded-2xl font-black text-xs uppercase shadow-lg transition-all active:scale-90">Yelek At</button>
-            </div>
-
-            <div class="flex gap-2 ml-auto">
-                <button onclick="exportImage()" class="bg-slate-800 p-4 rounded-2xl hover:bg-slate-700 transition-all">📸</button>
-                <button onclick="location.reload()" class="bg-rose-950/40 text-rose-500 p-4 rounded-2xl hover:bg-rose-900 transition-all">🗑️</button>
-            </div>
+<div class="draggable-menu w-[400px]" style="top: 20px; left: 20px;">
+    <div class="menu-header">
+        <span class="text-[10px] font-black">⚙️ ANA KONTROLLER</span>
+        <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+    </div>
+    <div class="p-4 space-y-4">
+        <div class="flex justify-between items-center gap-4">
+            <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-800 text-xs p-2 rounded-lg flex-1 border border-slate-700"></select>
+            <button onclick="exportImage()" class="bg-slate-700 p-2 rounded-lg">📸</button>
         </div>
-
-        <div id="playerInputs" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-4 bg-slate-900/50 border-x border-slate-800 max-h-48 overflow-y-auto"></div>
-
-        <div class="flex flex-col lg:flex-row bg-slate-900 rounded-b-3xl border border-slate-800 overflow-hidden shadow-2xl">
-            
-            <div class="w-full lg:w-60 p-6 bg-slate-900/80 border-r border-slate-800">
-                <h4 class="text-rose-500 font-black text-center mb-6">A TAKIMI</h4>
-                <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-800 p-3 rounded-xl text-xs mb-6 border border-slate-700">
-                    <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                </select>
-                <div class="space-y-6">
-                    <div><label class="text-[9px] text-slate-500 block mb-2">DEFANS</label><input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500"></div>
-                    <div><label class="text-[9px] text-slate-500 block mb-2">ORTA</label><input type="range" oninput="moveLine('a', 'MID', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500"></div>
-                    <div><label class="text-[9px] text-slate-500 block mb-2">FORVET</label><input type="range" oninput="moveLine('a', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500"></div>
-                </div>
-            </div>
-
-            <div class="field-container flex-1 bg-black/20 flex justify-center items-center">
-                <div id="field" class="field rounded-sm">
-                    <div class="absolute left-1/2 top-0 w-0.5 h-full bg-white"></div>
-                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 border-2 border-white rounded-full"></div>
-                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
-                    <div class="box-left"></div><div class="goal-left"></div>
-                    <div class="box-right"></div><div class="goal-right"></div>
-                    <div id="ball" class="absolute w-12 h-12 bg-white rounded-full flex items-center justify-center cursor-grab shadow-2xl z-[100] text-2xl transform -translate-x-1/2 -translate-y-1/2" style="left:50%; top:50%">⚽</div>
-                </div>
-            </div>
-
-            <div class="w-full lg:w-60 p-6 bg-slate-900/80 border-l border-slate-800">
-                <h4 class="text-blue-500 font-black text-center mb-6">B TAKIMI</h4>
-                <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-800 p-3 rounded-xl text-xs mb-6 border border-slate-700">
-                    <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                </select>
-                <div class="space-y-6">
-                    <div><label class="text-[9px] text-slate-500 block mb-2">DEFANS</label><input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500"></div>
-                    <div><label class="text-[9px] text-slate-500 block mb-2">ORTA</label><input type="range" oninput="moveLine('b', 'MID', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500"></div>
-                    <div><label class="text-[9px] text-slate-500 block mb-2">FORVET</label><input type="range" oninput="moveLine('b', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500"></div>
-                </div>
-            </div>
-
+        <div class="flex gap-2">
+            <button onclick="distributeAndAlign()" class="bg-emerald-600 px-4 py-2 rounded-xl font-bold text-[10px] flex-1 uppercase">Diz</button>
+            <button onclick="randomVest()" class="bg-amber-500 text-black px-4 py-2 rounded-xl font-bold text-[10px] flex-1 uppercase">Yelek</button>
         </div>
+    </div>
+</div>
+
+<div class="draggable-menu w-[300px]" style="top: 20px; right: 20px;">
+    <div class="menu-header">
+        <span class="text-[10px] font-black">🏃 OYUNCU AYARLARI</span>
+        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+    </div>
+    <div id="playerInputs" class="p-3 max-h-[400px] overflow-y-auto space-y-2"></div>
+</div>
+
+<div class="draggable-menu w-[220px]" style="bottom: 40px; left: 20px;">
+    <div class="menu-header">
+        <span class="text-rose-500 text-[10px] font-black">TEAM A</span>
+    </div>
+    <div class="p-4 space-y-4">
+        <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-800 p-2 rounded text-xs">
+            <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+        </select>
+        <input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500">
+        <input type="range" oninput="moveLine('a', 'MID', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500">
+    </div>
+</div>
+
+<div class="draggable-menu w-[220px]" style="bottom: 40px; right: 20px;">
+    <div class="menu-header">
+        <span class="text-blue-500 text-[10px] font-black">TEAM B</span>
+    </div>
+    <div class="p-4 space-y-4">
+        <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-800 p-2 rounded text-xs">
+            <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+        </select>
+        <input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500">
+        <input type="range" oninput="moveLine('b', 'MID', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500">
     </div>
 </div>
 
 <script>
 let players = [];
-let activeDrag = null, startX, startY, initialX, initialY;
+let activeDrag = null, startX, startY, initialX, initialY, dragType = "";
+let topZ = 100;
 
 const tacticData = {
-    "3-1-2": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[55,50]], FWD:[[82,30],[82,70]] },
-    "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[82,30],[82,70]] },
-    "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
+    "3-1-2": { GK:[10,50], DEF:[[30,20],[30,50],[30,80]], MID:[[55,50]], FWD:[[85,30],[85,70]] },
+    "2-2-2": { GK:[10,50], DEF:[[30,30],[30,70]], MID:[[55,30],[55,70]], FWD:[[85,30],[85,70]] },
+    "3-2-1": { GK:[10,50], DEF:[[30,20],[30,50],[30,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
 };
+
+// HER ŞEYİ SÜRÜKLENEBİLİR YAPMA FONKSİYONU
+function initDraggable(el, header) {
+    header.onmousedown = (e) => {
+        activeDrag = el;
+        dragType = "menu";
+        startX = e.clientX; startY = e.clientY;
+        initialX = el.offsetLeft; initialY = el.offsetTop;
+        el.style.zIndex = ++topZ;
+    };
+}
 
 function init() {
     const sel = document.getElementById('playerCount');
@@ -132,70 +137,42 @@ function init() {
         if(i===12) opt.selected = true; sel.appendChild(opt);
     }
     updatePlayerList();
+    
+    // Menüleri Tanımla
+    document.querySelectorAll('.draggable-menu').forEach(menu => {
+        initDraggable(menu, menu.querySelector('.menu-header'));
+    });
 }
 
 function updatePlayerList() {
     const count = parseInt(document.getElementById('playerCount').value);
-    if (players.length < count) {
-        for (let i = players.length; i < count; i++) {
-            players.push({ id: i, name: `Oyuncu ${i + 1}`, quality: 5, positions: i < 2 ? ["GK"] : ["MID"] });
-        }
-    }
-    renderInputs(count);
-}
-
-function renderInputs(count) {
+    players = Array.from({length: count}, (_, i) => players[i] || { id: i, name: `Oyu ${i + 1}`, quality: 5, positions: i < 2 ? ["GK"] : ["MID"] });
     const container = document.getElementById('playerInputs');
-    container.innerHTML = "";
-    for (let i = 0; i < count; i++) {
-        let p = players[i];
-        container.innerHTML += `
-        <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
-            <input type="text" value="${p.name}" oninput="players[${i}].name=this.value" class="w-full bg-slate-900 p-2 rounded-lg text-[10px] mb-2 border border-slate-700 font-bold outline-none focus:border-emerald-500">
-            <div class="flex justify-between items-center mb-2 px-1">
-                <span class="text-[9px] font-black text-slate-500 uppercase">Q:</span>
-                <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-slate-900 text-[10px] rounded p-1">
-                    ${[1,3,5,7,9].map(n => `<option value="${n}" ${p.quality===n?'selected':''}>${n}</option>`).join('')}
-                </select>
-            </div>
-            <div class="flex flex-wrap gap-1">
+    container.innerHTML = players.map((p, i) => `
+        <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700 flex flex-col gap-1">
+            <input type="text" value="${p.name}" oninput="players[${i}].name=this.value" class="bg-slate-900 p-1 text-[10px] rounded font-bold outline-none">
+            <div class="flex gap-1">
                 ${["GK","DEF","MID","FWD"].map(pos => `
-                    <button onclick="togglePos(${i},'${pos}',this)" 
-                        class="flex-1 text-[8px] py-1 rounded-md font-bold 
-                        ${p.positions.includes(pos) ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-400'}"> 
-                        ${pos} 
-                    </button>`).join('')}
+                    <button onclick="togglePos(${i},'${pos}',this)" class="flex-1 text-[7px] p-1 rounded ${p.positions.includes(pos) ? 'bg-emerald-600' : 'bg-slate-700'}">${pos}</button>
+                `).join('')}
             </div>
-        </div>`;
-    }
+        </div>
+    `).join('');
 }
 
 function togglePos(idx, pos, btn) {
     let p = players[idx];
-    if(p.positions.includes(pos)) {
-        p.positions = p.positions.filter(x => x !== pos);
-        btn.className = "flex-1 text-[8px] py-1 rounded-md font-bold bg-slate-700 text-slate-400";
-    } else {
-        p.positions.push(pos);
-        btn.className = "flex-1 text-[8px] py-1 rounded-md font-bold bg-emerald-600 text-white";
-    }
+    p.positions.includes(pos) ? p.positions = p.positions.filter(x => x !== pos) : p.positions.push(pos);
+    updatePlayerList();
 }
 
 function distributeAndAlign() {
     const count = parseInt(document.getElementById('playerCount').value);
-    let activePool = players.slice(0, count).sort(() => Math.random() - 0.5);
+    let pool = [...players].sort(() => Math.random() - 0.5);
     let teamA = [], teamB = [];
     
-    let gks = activePool.filter(p => p.positions.includes("GK"));
-    if(gks.length >= 2) { 
-        teamA.push(gks[0]); teamB.push(gks[1]); 
-        activePool = activePool.filter(p => p.id !== gks[0].id && p.id !== gks[1].id); 
-    }
-    
-    activePool.sort((a,b) => b.quality - a.quality).forEach(p => {
-        let sumA = teamA.reduce((s,x)=>s+x.quality,0);
-        let sumB = teamB.reduce((s,x)=>s+x.quality,0);
-        (teamA.length < count/2 && (sumA <= sumB || teamB.length >= count/2)) ? teamA.push(p) : teamB.push(p);
+    pool.sort((a,b) => b.quality - a.quality).forEach(p => {
+        (teamA.length < count/2) ? teamA.push(p) : teamB.push(p);
     });
     
     document.querySelectorAll('.player:not(#ball)').forEach(e => e.remove());
@@ -206,53 +183,49 @@ function distributeAndAlign() {
 function alignTeam(teamArr, teamName, tacKey) {
     const tac = tacticData[tacKey];
     let slots = [{role:'GK', pos:tac.GK}, ...tac.DEF.map(p=>({role:'DEF',pos:p})), ...tac.MID.map(p=>({role:'MID',pos:p})), ...tac.FWD.map(p=>({role:'FWD',pos:p}))];
-
     teamArr.forEach((p, i) => {
         if(!slots[i]) return;
         const el = document.createElement('div');
         el.className = `player team-${teamName}`;
-        el.innerHTML = `<div class="truncate uppercase">${p.name}</div><div class="role-label text-[8px] opacity-50 font-black">${slots[i].role}</div>`;
+        el.innerHTML = `<div>${p.name}</div><div class="text-[7px] opacity-50">${slots[i].role}</div>`;
         el.dataset.role = slots[i].role; el.dataset.team = teamName;
-        
-        let [rawX, rawY] = slots[i].pos;
-        let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
-        el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
-        makeDraggable(el);
+        let [rx, ry] = slots[i].pos;
+        let fx = teamName === 'a' ? rx/2 : 100 - rx/2;
+        el.style.left = fx + "%"; el.style.top = ry + "%"; el.dataset.baseX = fx;
+        makePlayerDraggable(el);
         document.getElementById('field').appendChild(el);
     });
 }
 
-function makeDraggable(el) {
-    const start = (e) => {
-        activeDrag = el;
-        const ev = e.touches ? e.touches[0] : e;
-        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
-        startX = ev.clientX / scale; startY = ev.clientY / scale;
+function makePlayerDraggable(el) {
+    el.onmousedown = (e) => {
+        e.stopPropagation();
+        activeDrag = el; dragType = "player";
+        startX = e.clientX; startY = e.clientY;
         initialX = el.offsetLeft; initialY = el.offsetTop;
         el.style.transition = "none";
+        el.style.zIndex = ++topZ;
     };
-    el.onmousedown = start; el.ontouchstart = start;
 }
 
-window.onmousemove = window.ontouchmove = (e) => {
+window.onmousemove = (e) => {
     if(!activeDrag) return;
-    const ev = e.touches ? e.touches[0] : e;
-    const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
-    activeDrag.style.left = (initialX + (ev.clientX / scale - startX)) + "px";
-    activeDrag.style.top = (initialY + (ev.clientY / scale - startY)) + "px";
+    let dx = e.clientX - startX;
+    let dy = e.clientY - startY;
+    activeDrag.style.left = (initialX + dx) + "px";
+    activeDrag.style.top = (initialY + dy) + "px";
 };
 
-window.onmouseup = window.ontouchend = () => { 
-    if(activeDrag) activeDrag.style.transition = "left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), top 0.3s";
-    activeDrag = null; 
+window.onmouseup = () => {
+    if(activeDrag && dragType === "player") activeDrag.style.transition = "left 0.3s ease-out, top 0.3s ease-out";
+    activeDrag = null;
 };
 
 function moveLine(team, role, val) {
-    const shift = parseInt(val);
     document.querySelectorAll('.player').forEach(el => {
         if(el.dataset.team === team && el.dataset.role === role) {
             let base = parseFloat(el.dataset.baseX);
-            el.style.left = `calc(${base}% + ${shift}px)`;
+            el.style.left = `calc(${base}% + ${val}px)`;
         }
     });
 }
@@ -266,18 +239,15 @@ function randomVest() {
 }
 
 function exportImage() {
-    const field = document.getElementById('field');
-    html2canvas(field, { scale: 3, backgroundColor: '#070b14' }).then(canvas => {
+    html2canvas(document.getElementById('field')).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'taktik_pro_v35_hq.png';
+        link.download = 'taktik_freedom.png';
         link.href = canvas.toDataURL();
         link.click();
     });
 }
 
-function realignOnly(t) { distributeAndAlign(); }
-
-makeDraggable(document.getElementById('ball'));
+makePlayerDraggable(document.getElementById('ball'));
 init();
 </script>
 </body>
