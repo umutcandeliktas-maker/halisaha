@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v42 - AutoSave</title>
+    <title>Taktik Pro - Kent BT Ekibi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root { --master-scale: 1; }
-        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         #master-container { transform: scale(var(--master-scale)); transform-origin: top center; transition: transform 0.2s; }
+
+        /* ÜST LOGO YAZISI */
+        .brand-text {
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 1001; font-size: 12px; font-weight: 900; letter-spacing: 2px;
+            color: rgba(255,255,255,0.4); text-transform: uppercase; pointer-events: none;
+        }
 
         /* SAHA */
         .field { 
@@ -20,7 +27,6 @@
         .box-l { left: 0; top: 25%; width: 15%; height: 50%; border-left: 0; }
         .box-r { right: 0; top: 25%; width: 15%; height: 50%; border-right: 0; }
         
-        /* OYUNCU */
         .player {
             position: absolute; width: 75px; padding: 5px; border-radius: 12px;
             text-align: center; font-weight: 800; font-size: 10px;
@@ -31,20 +37,20 @@
         .team-b { background: linear-gradient(135deg, #2563eb, #1e40af); border: 2px solid #fff; color: white; }
         .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; transform: translate(-50%, -50%) scale(1.1); }
 
-        /* UI PANELLERİ */
         .ui-panel { 
             background: rgba(15, 23, 42, 0.95); border: 1px solid #334155; 
             backdrop-filter: blur(12px); overflow: hidden; resize: both; 
             display: flex; flex-direction: column; min-height: 200px;
         }
         .panel-header { background: #1e293b; color: #94a3b8; font-size: 9px; font-weight: 900; padding: 8px; cursor: move; border-bottom: 1px solid #334155; }
-        
         .smart-content { display: flex; flex-direction: column; justify-content: space-evenly; height: 100%; flex: 1; padding: 1.5rem; }
         #playerInputs { display: flex; flex-wrap: wrap; justify-content: space-evenly; align-content: space-evenly; gap: 12px; height: 100%; width: 100%; }
         .player-card { width: 155px; flex-shrink: 0; }
     </style>
 </head>
 <body class="p-2 sm:p-4">
+
+<div class="brand-text">Kent BT Ekibi Sunar</div>
 
 <nav class="fixed top-0 left-0 w-full z-[100] bg-slate-900/95 border-b border-slate-800 p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
     <div class="flex items-center gap-4">
@@ -55,17 +61,18 @@
     </div>
     
     <div class="flex items-center gap-2">
-        <button onclick="clearCache()" class="bg-rose-500/10 text-rose-500 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-rose-500/20">🧹 VERİLERİ SİL</button>
-        <button onclick="resetLayout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-black">🔄 DÜZENİ SIFIRLA</button>
+        <button onclick="clearCache()" class="bg-rose-500/10 text-rose-500 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-rose-500/20">🧹 SIFIRLA</button>
+        <button onclick="resetLayout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-black">🔄 DÜZEN</button>
         <button onclick="exportImage()" class="bg-emerald-600 text-white px-5 py-2 rounded-xl text-[10px] font-black">📸 İNDİR</button>
     </div>
 </nav>
 
 <div id="master-container" class="pt-24 pb-10">
     <div class="max-w-full mx-auto space-y-6 px-4">
+        
         <div id="panelInputs" class="ui-panel rounded-3xl shadow-2xl w-full" data-id="main-panel">
-            <div class="panel-header">OYUNCU LİSTESİ (TAŞI/BOYUTLANDIR)</div>
-            <div class="p-4 bg-slate-900/40 border-b border-slate-800 flex flex-wrap items-center gap-4">
+            <div class="panel-header">OYUNCU LİSTESİ</div>
+            <div class="p-4 bg-slate-900/40 border-b border-slate-800 flex flex-wrap items-center gap-4 shrink-0">
                 <select id="playerCount" onchange="updatePlayerList(); saveAll();" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800"></select>
                 <button onclick="distributeAndAlign(); saveAll();" class="bg-indigo-600 px-6 py-2 rounded-xl text-[10px] font-black text-white">Dizilişi Kur</button>
                 <button onclick="randomVest()" class="bg-amber-500 px-6 py-2 rounded-xl text-[10px] font-black text-black ml-auto">Yelek At</button>
@@ -133,24 +140,31 @@ function saveAll() {
         tacticB: document.getElementById('tacticB').value,
         zoom: document.getElementById('zoomRange').value,
         sliders: {
-            aDEF: document.getElementById('slider-a-DEF').value,
-            aMID: document.getElementById('slider-a-MID').value,
-            aFWD: document.getElementById('slider-a-FWD').value,
-            bDEF: document.getElementById('slider-b-DEF').value,
-            bMID: document.getElementById('slider-b-MID').value,
-            bFWD: document.getElementById('slider-b-FWD').value
+            aDEF: document.getElementById('slider-a-DEF').value, aMID: document.getElementById('slider-a-MID').value, aFWD: document.getElementById('slider-a-FWD').value,
+            bDEF: document.getElementById('slider-b-DEF').value, bMID: document.getElementById('slider-b-MID').value, bFWD: document.getElementById('slider-b-FWD').value
         },
         panelStyles: {}
     };
     document.querySelectorAll('.ui-panel').forEach(p => {
         data.panelStyles[p.dataset.id] = { width: p.style.width, height: p.style.height, top: p.style.top, left: p.style.left, position: p.style.position };
     });
-    localStorage.setItem('tacticBoardSave', JSON.stringify(data));
+    localStorage.setItem('tacticBoardSave_v2', JSON.stringify(data));
+}
+
+function initPlayerCountSelect() {
+    const sel = document.getElementById('playerCount');
+    sel.innerHTML = "";
+    for(let i=2; i<=22; i+=2) {
+        let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
+        if(i===12) opt.selected = true; sel.appendChild(opt);
+    }
 }
 
 function loadAll() {
-    const saved = localStorage.getItem('tacticBoardSave');
-    if(!saved) { init(); return; }
+    initPlayerCountSelect(); // Önce select'i doldur
+    const saved = localStorage.getItem('tacticBoardSave_v2');
+    if(!saved) { updatePlayerList(); initPanelControls(); return; }
+    
     const data = JSON.parse(saved);
     players = data.players;
     document.getElementById('playerCount').value = data.playerCount;
@@ -159,7 +173,6 @@ function loadAll() {
     document.getElementById('zoomRange').value = data.zoom;
     changeZoom(data.zoom);
     
-    // Sliders
     document.getElementById('slider-a-DEF').value = data.sliders.aDEF;
     document.getElementById('slider-a-MID').value = data.sliders.aMID;
     document.getElementById('slider-a-FWD').value = data.sliders.aFWD;
@@ -167,31 +180,20 @@ function loadAll() {
     document.getElementById('slider-b-MID').value = data.sliders.bMID;
     document.getElementById('slider-b-FWD').value = data.sliders.bFWD;
 
-    // Panels
     Object.keys(data.panelStyles).forEach(id => {
         const p = document.querySelector(`[data-id="${id}"]`);
-        const s = data.panelStyles[id];
-        Object.assign(p.style, s);
+        if(p) Object.assign(p.style, data.panelStyles[id]);
     });
 
     updatePlayerList(true);
-    distributeAndAlign(true);
-}
-
-function init() {
-    const sel = document.getElementById('playerCount');
-    for(let i=2; i<=22; i+=2) {
-        let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
-        if(i===12) opt.selected = true; sel.appendChild(opt);
-    }
-    updatePlayerList();
+    distributeAndAlign();
     initPanelControls();
 }
 
 function changeZoom(v) { document.documentElement.style.setProperty('--master-scale', v); }
 
 function clearCache() {
-    if(confirm("Tüm kayıtlı veriler ve düzen silinecek?")) { localStorage.clear(); location.reload(); }
+    if(confirm("Tüm kayıtlı veriler silinecek?")) { localStorage.clear(); location.reload(); }
 }
 
 function resetLayout() {
@@ -223,7 +225,7 @@ function updatePlayerList(isLoad = false) {
     }
     const container = document.getElementById('playerInputs');
     container.innerHTML = players.map((p, i) => `
-        <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+        <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-inner">
             <input type="text" placeholder="OYUNCU ${i+1}" value="${p.name}" oninput="players[${i}].name=this.value; saveAll();" class="w-full bg-slate-950 p-2 text-[10px] rounded-lg font-black border border-slate-800 outline-none text-emerald-400 uppercase">
             <div class="flex justify-between items-center text-[8px] font-black text-slate-500 uppercase">
                 <span>Kalite</span>
@@ -244,7 +246,7 @@ function togglePos(idx, pos, btn) {
     saveAll();
 }
 
-function distributeAndAlign(isLoad = false) {
+function distributeAndAlign() {
     const count = parseInt(document.getElementById('playerCount').value);
     let teamA = [], teamB = [];
     let pool = [...players].slice(0, count).sort((a,b) => b.quality - a.quality);
