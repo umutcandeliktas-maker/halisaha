@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v35 - Stabil & Custom</title>
+    <title>Taktik Pro v35 - Full & Reset</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -12,7 +12,6 @@
         
         #master-container { transform: scale(var(--master-scale)); transform-origin: top center; transition: transform 0.2s; }
 
-        /* SAHA */
         .field { 
             width: 950px; height: 580px; background: #15803d; border: 4px solid #fff; position: relative;
             background-image: repeating-linear-gradient(90deg, transparent, transparent 95px, rgba(0,0,0,0.05) 95px, rgba(0,0,0,0.05) 190px);
@@ -22,7 +21,6 @@
         .box-l { left: 0; top: 145px; width: 150px; height: 290px; border-left: 0; }
         .box-r { right: 0; top: 145px; width: 150px; height: 290px; border-right: 0; }
         
-        /* OYUNCU */
         .player {
             position: absolute; width: 80px; padding: 6px; border-radius: 8px;
             text-align: center; font-weight: 800; font-size: 10px;
@@ -33,16 +31,15 @@
         .team-b { background: #2563eb; border: 2px solid #fff; color: white; }
         .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; }
 
-        /* DRAGGABLE MENUS (Sadece Edit Modda Aktif) */
-        .ui-panel { transition: box-shadow 0.3s; }
+        .ui-panel { transition: box-shadow 0.3s; position: relative; }
         .edit-mode-active .ui-panel { border: 2px dashed #10b981 !important; cursor: move; }
-        .panel-header { display: none; background: #10b981; color: black; font-size: 9px; font-weight: bold; padding: 2px 5px; cursor: move; }
+        .panel-header { display: none; background: #10b981; color: black; font-size: 9px; font-weight: bold; padding: 4px 8px; cursor: move; }
         .edit-mode-active .panel-header { display: block; }
     </style>
 </head>
 <body class="bg-slate-950">
 
-<div class="fixed top-0 left-0 w-full z-[100] bg-slate-900/90 backdrop-blur border-b border-slate-800 p-3 flex items-center justify-between px-8">
+<div class="fixed top-0 left-0 w-full z-[100] bg-slate-900/95 border-b border-slate-800 p-3 flex items-center justify-between px-8">
     <div class="flex items-center gap-6">
         <h1 class="text-white font-black tracking-tighter text-lg">TAKTIK<span class="text-emerald-500">PRO</span></h1>
         <div class="flex items-center gap-3 bg-slate-800 px-4 py-1.5 rounded-full">
@@ -51,67 +48,65 @@
         </div>
     </div>
     
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
+        <button onclick="resetLayout()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">Sıfırla (Layout)</button>
         <button id="editToggle" onclick="toggleEditMode()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
             <span id="lockIcon">🔒</span> <span id="lockText">Düzenleme Kapalı</span>
         </button>
-        <button onclick="exportImage()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-xl text-xs font-bold">Resmi İndir</button>
+        <button onclick="exportImage()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-xl text-xs font-bold">İndir</button>
     </div>
 </div>
 
-<div id="master-container" class="pt-24 pb-20">
-    <div class="max-w-[1400px] mx-auto px-4 space-y-4">
+<div id="master-container" class="pt-24">
+    <div id="layout-grid" class="max-w-[1400px] mx-auto px-4 space-y-4 flex flex-col">
         
-        <div id="panelInputs" class="ui-panel bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden relative">
-            <div class="panel-header">PANELİ TAŞI</div>
+        <div id="panelInputs" class="ui-panel bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="panel-header">GENEL AYARLARI TAŞI</div>
             <div class="p-4 flex items-center gap-4 border-b border-slate-800">
                 <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold outline-none"></select>
-                <button onclick="distributeAndAlign()" class="bg-indigo-600 px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-indigo-500 transition-all">Kadroları Kur</button>
-                <button onclick="randomVest()" class="bg-amber-500 text-black px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-amber-400 transition-all ml-auto">Yelek At</button>
+                <button onclick="distributeAndAlign()" class="bg-indigo-600 px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-indigo-500">Kadroları Kur</button>
+                <button onclick="randomVest()" class="bg-amber-500 text-black px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-amber-400 ml-auto">Yelek At</button>
             </div>
-            <div id="playerInputs" class="p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 max-h-40 overflow-y-auto"></div>
+            <div id="playerInputs" class="p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 max-h-48 overflow-y-auto"></div>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-4 items-start">
-            <div id="panelA" class="ui-panel w-full lg:w-64 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden relative">
+        <div id="main-content" class="flex flex-col lg:flex-row gap-4">
+            <div id="panelA" class="ui-panel w-full lg:w-64 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shrink-0">
                 <div class="panel-header">TAŞI: TAKIM A</div>
                 <div class="p-5 space-y-6">
                     <h3 class="text-rose-500 font-black text-center text-xs tracking-widest uppercase">A Takımı</h3>
-                    <div>
-                        <label class="text-[9px] text-slate-500 font-bold block mb-2 uppercase">Diziliş</label>
-                        <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-800 p-2.5 rounded-lg text-xs font-bold outline-none border border-slate-700">
-                            <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                        </select>
-                    </div>
+                    <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-800 p-2.5 rounded-lg text-xs font-bold border border-slate-700">
+                        <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+                    </select>
                     <div class="space-y-4">
-                        <input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500">
-                        <input type="range" oninput="moveLine('a', 'MID', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500">
+                        <div><label class="text-[8px] text-slate-500 font-bold mb-1 block">DEFANS</label><input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500"></div>
+                        <div><label class="text-[8px] text-slate-500 font-bold mb-1 block">ORTA</label><input type="range" oninput="moveLine('a', 'MID', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500"></div>
+                        <div><label class="text-[8px] text-slate-500 font-bold mb-1 block">FORVET</label><input type="range" oninput="moveLine('a', 'FWD', this.value)" min="-100" max="100" value="0" class="w-full accent-rose-500"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="flex-1 flex justify-center">
+            <div id="panelField" class="ui-panel flex-1 flex justify-center bg-black/20 rounded-2xl p-4">
+                <div class="panel-header">SAHAYI TAŞI</div>
                 <div id="field" class="field rounded-sm">
                     <div class="absolute left-1/2 top-0 w-0.5 h-full bg-white/40"></div>
                     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/40 rounded-full"></div>
                     <div class="box box-l"></div><div class="box box-r"></div>
-                    <div id="ball" class="absolute w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-grab z-[100] text-xl shadow-2xl" style="left:50%; top:50%; transform: translate(-50%, -50%)">⚽</div>
+                    <div id="ball" class="absolute w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-grab z-[100] text-xl" style="left:50%; top:50%; transform: translate(-50%, -50%)">⚽</div>
                 </div>
             </div>
 
-            <div id="panelB" class="ui-panel w-full lg:w-64 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden relative">
+            <div id="panelB" class="ui-panel w-full lg:w-64 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shrink-0">
                 <div class="panel-header">TAŞI: TAKIM B</div>
                 <div class="p-5 space-y-6">
                     <h3 class="text-blue-500 font-black text-center text-xs tracking-widest uppercase">B Takımı</h3>
-                    <div>
-                        <label class="text-[9px] text-slate-500 font-bold block mb-2 uppercase">Diziliş</label>
-                        <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-800 p-2.5 rounded-lg text-xs font-bold outline-none border border-slate-700">
-                            <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                        </select>
-                    </div>
+                    <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-800 p-2.5 rounded-lg text-xs font-bold border border-slate-700">
+                        <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+                    </select>
                     <div class="space-y-4">
-                        <input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500">
-                        <input type="range" oninput="moveLine('b', 'MID', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500">
+                        <div><label class="text-[8px] text-slate-500 font-bold mb-1 block">DEFANS</label><input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500"></div>
+                        <div><label class="text-[8px] text-slate-500 font-bold mb-1 block">ORTA</label><input type="range" oninput="moveLine('b', 'MID', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500"></div>
+                        <div><label class="text-[8px] text-slate-500 font-bold mb-1 block">FORVET</label><input type="range" oninput="moveLine('b', 'FWD', this.value)" min="-100" max="100" value="0" class="w-full accent-blue-500"></div>
                     </div>
                 </div>
             </div>
@@ -125,8 +120,8 @@ let editMode = false;
 let activeDrag = null, startX, startY, initialX, initialY, dragType = "";
 
 const tacticData = {
-    "3-1-2": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[55,50]], FWD:[[85,30],[85,70]] },
-    "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[85,30],[85,70]] },
+    "3-1-2": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[55,50]], FWD:[[82,30],[82,70]] },
+    "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[82,30],[82,70]] },
     "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
 };
 
@@ -138,6 +133,12 @@ function init() {
     }
     updatePlayerList();
     initPanelDragging();
+}
+
+function resetLayout() {
+    document.querySelectorAll('.ui-panel').forEach(p => {
+        p.style.position = ""; p.style.left = ""; p.style.top = ""; p.style.zIndex = "";
+    });
 }
 
 function toggleEditMode() {
@@ -163,13 +164,19 @@ function initPanelDragging() {
 
 function updatePlayerList() {
     const count = parseInt(document.getElementById('playerCount').value);
-    players = Array.from({length: count}, (_, i) => players[i] || { id: i, name: `Oyu ${i + 1}`, quality: 5, positions: i < 2 ? ["GK"] : ["MID"] });
+    players = Array.from({length: count}, (_, i) => players[i] || { id: i, name: `Oyu ${i + 1}`, quality: 5, positions: ["MID"] });
     const container = document.getElementById('playerInputs');
     container.innerHTML = players.map((p, i) => `
         <div class="bg-slate-800 p-2 rounded-xl border border-slate-700 flex flex-col gap-1">
-            <input type="text" value="${p.name}" oninput="players[${i}].name=this.value" class="bg-slate-900 p-1 text-[10px] rounded font-bold outline-none border border-slate-700">
-            <div class="flex gap-1">
-                ${["GK","DEF","MID"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="flex-1 text-[8px] p-1 rounded font-bold ${p.positions.includes(pos) ? 'bg-emerald-600' : 'bg-slate-700'}">${pos}</button>`).join('')}
+            <input type="text" value="${p.name}" oninput="players[${i}].name=this.value" class="bg-slate-900 p-1 text-[10px] rounded font-bold border border-slate-700 outline-none">
+            <div class="flex justify-between items-center bg-slate-950/50 rounded px-1">
+                <span class="text-[8px] text-slate-500 font-bold">Q:</span>
+                <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-transparent text-[9px] text-emerald-400 font-bold">
+                    ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${p.quality===n?'selected':''}>${n}</option>`).join('')}
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-1">
+                ${["GK","DEF","MID","FWD"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="text-[7px] p-1 rounded font-bold ${p.positions.includes(pos) ? 'bg-emerald-600' : 'bg-slate-700'}">${pos}</button>`).join('')}
             </div>
         </div>`).join('');
 }
@@ -183,7 +190,7 @@ function togglePos(idx, pos, btn) {
 function distributeAndAlign() {
     const count = parseInt(document.getElementById('playerCount').value);
     let teamA = [], teamB = [];
-    let pool = [...players].slice(0, count).sort(() => Math.random() - 0.5);
+    let pool = [...players].slice(0, count).sort((a,b) => b.quality - a.quality);
     
     pool.forEach((p, i) => (i % 2 === 0 ? teamA : teamB).push(p));
     
@@ -199,7 +206,7 @@ function alignTeam(teamArr, teamName, tacKey) {
         if(!slots[i]) return;
         const el = document.createElement('div');
         el.className = `player team-${teamName}`;
-        el.innerHTML = `<div class="truncate">${p.name}</div><div class="text-[7px] opacity-50">${slots[i].role}</div>`;
+        el.innerHTML = `<div class="truncate">${p.name}</div><div class="text-[7px] opacity-50 font-black">${slots[i].role}</div>`;
         el.dataset.role = slots[i].role; el.dataset.team = teamName;
         let [rx, ry] = slots[i].pos;
         let fx = teamName === 'a' ? rx/2 : 100 - rx/2;
@@ -217,21 +224,19 @@ function makeDraggable(el, type) {
         startX = e.clientX / scale; startY = e.clientY / scale;
         initialX = el.offsetLeft; initialY = el.offsetTop;
         el.style.transition = "none";
+        el.style.zIndex = 2000;
     };
 }
 
 window.onmousemove = (e) => {
     if(!activeDrag) return;
     const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
-    let dx = e.clientX / scale - startX;
-    let dy = e.clientY / scale - startY;
-    
-    if(dragType === "panel" && editMode) {
-        activeDrag.style.left = (initialX + (e.clientX - (startX * scale))) + "px";
-        activeDrag.style.top = (initialY + (e.clientY - (startY * scale))) + "px";
+    if(dragType === "panel") {
+        activeDrag.style.left = (initialX + (e.clientX - startX * scale)) + "px";
+        activeDrag.style.top = (initialY + (e.clientY - startY * scale)) + "px";
     } else {
-        activeDrag.style.left = (initialX + dx) + "px";
-        activeDrag.style.top = (initialY + dy) + "px";
+        activeDrag.style.left = (initialX + (e.clientX / scale - startX)) + "px";
+        activeDrag.style.top = (initialY + (e.clientY / scale - startY)) + "px";
     }
 };
 
@@ -260,9 +265,7 @@ function randomVest() {
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 3 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'taktik_pro.png';
-        link.href = canvas.toDataURL();
-        link.click();
+        link.download = 'taktik_pro.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
 
