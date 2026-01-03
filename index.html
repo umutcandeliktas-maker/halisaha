@@ -6,12 +6,15 @@
     <title>Kent BT Ekibi - Taktik Tahtası</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Kent BT Taktik">
+    <meta name="theme-color" content="#020617">
+    
     <style>
         :root { --master-scale: 1; }
         body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         #master-container { transform: scale(var(--master-scale)); transform-origin: top center; transition: transform 0.2s; }
 
-        /* YENİ LOGO TASARIMI */
         .kent-logo {
             font-size: 24px; font-weight: 900; letter-spacing: -1px;
             background: linear-gradient(to right, #10b981, #ffffff);
@@ -19,7 +22,6 @@
             text-transform: uppercase; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
         }
 
-        /* SAHA */
         .field { 
             width: 100%; height: 100%; min-height: 450px; background: #166534; border: 4px solid #fff; position: relative;
             background-image: repeating-linear-gradient(90deg, transparent, transparent 10%, rgba(0,0,0,0.03) 10%, rgba(0,0,0,0.03) 20%);
@@ -28,7 +30,6 @@
         .box-l { left: 0; top: 25%; width: 15%; height: 50%; border-left: 0; }
         .box-r { right: 0; top: 25%; width: 15%; height: 50%; border-right: 0; }
         
-        /* OYUNCU */
         .player {
             position: absolute; width: 75px; padding: 5px; border-radius: 12px;
             text-align: center; font-weight: 800; font-size: 10px;
@@ -39,7 +40,6 @@
         .team-b { background: linear-gradient(135deg, #2563eb, #1e40af); border: 2px solid #fff; color: white; }
         .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; transform: translate(-50%, -50%) scale(1.1); }
 
-        /* UI PANELLERİ */
         .ui-panel { 
             background: rgba(15, 23, 42, 0.95); border: 1px solid #334155; 
             backdrop-filter: blur(12px); overflow: hidden; resize: both; 
@@ -72,20 +72,20 @@
     <div class="max-w-full mx-auto space-y-6 px-4">
         
         <div id="panelInputs" class="ui-panel rounded-3xl shadow-2xl w-full" data-id="main-panel">
-            <div class="panel-header">OYUNCU LİSTESİ VE KALİTE AYARLARI</div>
+            <div class="panel-header">OYUNCU LİSTESİ</div>
             <div class="p-4 bg-slate-900/40 border-b border-slate-800 flex flex-wrap items-center gap-4 shrink-0">
-                <select id="playerCount" onchange="updatePlayerList(); saveAll();" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800 outline-none cursor-pointer"></select>
-                <button onclick="distributeAndAlign(); saveAll();" class="bg-indigo-600 px-6 py-2 rounded-xl text-[10px] font-black text-white hover:bg-indigo-500 shadow-lg shadow-indigo-900/40 transition-all">Dizilişi Kur</button>
-                <button onclick="randomVest()" class="bg-amber-500 px-6 py-2 rounded-xl text-[10px] font-black text-black ml-auto hover:bg-amber-400">Yelek At</button>
+                <select id="playerCount" onchange="updatePlayerList(); saveAll();" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800"></select>
+                <button onclick="distributeAndAlign(); saveAll();" class="bg-indigo-600 px-6 py-2 rounded-xl text-[10px] font-black text-white hover:bg-indigo-500">Dizilişi Kur</button>
+                <button onclick="randomVest()" class="bg-amber-500 px-6 py-2 rounded-xl text-[10px] font-black text-black ml-auto">Yelek At</button>
             </div>
             <div class="flex-1 p-6 overflow-hidden"><div id="playerInputs"></div></div>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-6 items-stretch">
             <div id="panelA" class="ui-panel w-full lg:w-72 rounded-3xl" data-id="panelA">
-                <div class="panel-header">A TAKIMI AYARLARI</div>
+                <div class="panel-header">A TAKIMI</div>
                 <div class="smart-content">
-                    <select id="tacticA" onchange="realignOnly('a'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800 outline-none">
+                    <select id="tacticA" onchange="realignOnly('a'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
                         <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
                     </select>
                     <div class="flex flex-col justify-evenly flex-1 pt-4">
@@ -107,9 +107,9 @@
             </div>
 
             <div id="panelB" class="ui-panel w-full lg:w-72 rounded-3xl" data-id="panelB">
-                <div class="panel-header">B TAKIMI AYARLARI</div>
+                <div class="panel-header">B TAKIMI</div>
                 <div class="smart-content">
-                    <select id="tacticB" onchange="realignOnly('b'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800 outline-none">
+                    <select id="tacticB" onchange="realignOnly('b'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
                         <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
                     </select>
                     <div class="flex flex-col justify-evenly flex-1 pt-4">
@@ -127,7 +127,18 @@
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY, dragType = "";
 
-// KAYDETME FONKSİYONU
+// HÜSEYİN DOĞAN KONTROLÜ (YENİ)
+function checkHuseyin(val, index, inputEl) {
+    if (val.toLowerCase().trim() === "hüseyin doğan") {
+        alert("Ne hüseyinmi kaç kaç kaç");
+        players[index].name = "";
+        inputEl.value = "";
+        saveAll();
+        return true;
+    }
+    return false;
+}
+
 function saveAll() {
     const data = {
         players: players,
@@ -141,17 +152,9 @@ function saveAll() {
         },
         panelStyles: {}
     };
-    
     document.querySelectorAll('.ui-panel').forEach(p => {
-        data.panelStyles[p.dataset.id] = {
-            width: p.style.width,
-            height: p.style.height,
-            top: p.style.top,
-            left: p.style.left,
-            position: p.style.position || 'relative'
-        };
+        data.panelStyles[p.dataset.id] = { width: p.style.width, height: p.style.height, top: p.style.top, left: p.style.left, position: p.style.position || 'relative' };
     });
-    
     localStorage.setItem('kentBT_TacticSave_v3', JSON.stringify(data));
 }
 
@@ -162,10 +165,8 @@ function loadAll() {
         let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
         if(i===12) opt.selected = true; sel.appendChild(opt);
     }
-
     const saved = localStorage.getItem('kentBT_TacticSave_v3');
     if(!saved) { updatePlayerList(); initPanelControls(); return; }
-    
     const data = JSON.parse(saved);
     players = data.players;
     document.getElementById('playerCount').value = data.playerCount;
@@ -173,40 +174,33 @@ function loadAll() {
     document.getElementById('tacticB').value = data.tacticB;
     document.getElementById('zoomRange').value = data.zoom;
     changeZoom(data.zoom);
-    
     document.getElementById('slider-a-DEF').value = data.sliders.aDEF;
     document.getElementById('slider-a-MID').value = data.sliders.aMID;
     document.getElementById('slider-a-FWD').value = data.sliders.aFWD;
     document.getElementById('slider-b-DEF').value = data.sliders.bDEF;
     document.getElementById('slider-b-MID').value = data.sliders.bMID;
     document.getElementById('slider-b-FWD').value = data.sliders.bFWD;
-
     Object.keys(data.panelStyles).forEach(id => {
         const p = document.querySelector(`[data-id="${id}"]`);
         if(p) Object.assign(p.style, data.panelStyles[id]);
     });
-
     updatePlayerList(true);
     distributeAndAlign();
     initPanelControls();
 }
 
-// PANEL BOYUTLARINI TAKİP ET (YENİ EKLEDİM)
 const resizeObserver = new ResizeObserver(entries => {
-    for (let entry of entries) {
-        if(entry.target.classList.contains('ui-panel')) saveAll();
-    }
+    for (let entry of entries) { if(entry.target.classList.contains('ui-panel')) saveAll(); }
 });
 
 function initPanelControls() {
     document.querySelectorAll('.ui-panel').forEach(panel => {
-        resizeObserver.observe(panel); // Boyut değişimini izle
+        resizeObserver.observe(panel);
         const header = panel.querySelector('.panel-header');
         header.onmousedown = header.ontouchstart = (e) => {
             activeDrag = panel; dragType = "panel";
             panel.style.position = "absolute";
             const ev = e.touches ? e.touches[0] : e;
-            const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
             startX = ev.clientX; startY = ev.clientY;
             initialX = panel.offsetLeft; initialY = panel.offsetTop;
             panel.style.zIndex = 1000;
@@ -227,7 +221,9 @@ function updatePlayerList(isLoad = false) {
     const container = document.getElementById('playerInputs');
     container.innerHTML = players.map((p, i) => `
         <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-inner hover:border-emerald-500/30 transition-all">
-            <input type="text" placeholder="OYUNCU ${i+1}" value="${p.name}" oninput="players[${i}].name=this.value; saveAll();" class="w-full bg-slate-950 p-2 text-[10px] rounded-lg font-black border border-slate-800 outline-none text-emerald-400 uppercase">
+            <input type="text" placeholder="OYUNCU ${i+1}" value="${p.name}" 
+                   oninput="if(!checkHuseyin(this.value, ${i}, this)) { players[${i}].name=this.value; saveAll(); }" 
+                   class="w-full bg-slate-950 p-2 text-[10px] rounded-lg font-black border border-slate-800 outline-none text-emerald-400 uppercase">
             <div class="flex justify-between items-center text-[8px] font-black text-slate-500 uppercase">
                 <span>Kalite</span>
                 <select onchange="players[${i}].quality=parseInt(this.value); saveAll();" class="bg-transparent text-white outline-none">
@@ -263,16 +259,14 @@ function alignTeam(teamArr, teamName, tacKey) {
         "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[82,30],[82,70]] },
         "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
     }[tacKey];
-    
-    let slots = [{role:'GK', pos:tac.GK}, ...tac.DEF.map(p=>({role:'DEF',pos:p})), ...tac.MID.map(p=>({role:'MID',pos:p})), ...tac.FWD.map(p=>({role:'FWD',pos:p}))];
-    
     teamArr.forEach((p, i) => {
-        if(!slots[i]) return;
+        let slot = [ {role:'GK', pos:tac.GK}, ...tac.DEF.map(p=>({role:'DEF',pos:p})), ...tac.MID.map(p=>({role:'MID',pos:p})), ...tac.FWD.map(p=>({role:'FWD',pos:p})) ][i];
+        if(!slot) return;
         const el = document.createElement('div');
         el.className = `player team-${teamName}`;
-        el.innerHTML = `<div class="truncate uppercase">${p.name || 'OYUNCU '+(p.id+1)}</div><div class="text-[7px] opacity-60 font-black">${slots[i].role}</div>`;
-        el.dataset.role = slots[i].role; el.dataset.team = teamName;
-        let [rx, ry] = slots[i].pos;
+        el.innerHTML = `<div class="truncate uppercase">${p.name || 'OYUNCU '+(p.id+1)}</div><div class="text-[7px] opacity-60 font-black">${slot.role}</div>`;
+        el.dataset.role = slot.role; el.dataset.team = teamName;
+        let [rx, ry] = slot.pos;
         let fx = teamName === 'a' ? rx/2 : 100 - rx/2;
         el.style.left = fx + "%"; el.style.top = ry + "%"; el.dataset.baseX = fx;
         makeDraggable(el, "player");
@@ -286,7 +280,7 @@ function makeDraggable(el, type) {
         activeDrag = el; dragType = type;
         const ev = e.touches ? e.touches[0] : e;
         const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
-        startX = ev.clientX / scale; startY = ev.clientY / scale;
+        startX = ev.clientX; startY = ev.clientY;
         initialX = el.offsetLeft; initialY = el.offsetTop;
         el.style.transition = "none";
         el.style.zIndex = 2000;
@@ -296,13 +290,13 @@ function makeDraggable(el, type) {
 window.onmousemove = window.ontouchmove = (e) => {
     if(!activeDrag) return;
     const ev = e.touches ? e.touches[0] : e;
-    const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
     if(dragType === "panel") {
         activeDrag.style.left = (initialX + (ev.clientX - startX)) + "px";
         activeDrag.style.top = (initialY + (ev.clientY - startY)) + "px";
     } else {
-        activeDrag.style.left = (initialX + (ev.clientX / scale - startX)) + "px";
-        activeDrag.style.top = (initialY + (ev.clientY / scale - startY)) + "px";
+        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
+        activeDrag.style.left = (initialX + (ev.clientX / scale - startX / scale)) + "px";
+        activeDrag.style.top = (initialY + (ev.clientY / scale - startY / scale)) + "px";
     }
 };
 
