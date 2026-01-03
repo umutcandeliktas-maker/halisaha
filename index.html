@@ -1,165 +1,363 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taktik Pro v34 - Mevki Sadakati</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taktik Pro v35 - Pro Diziliş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        body { background: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; touch-action: manipulation; }
+        
+        /* Saha Arka Planı ve Çizgileri */
+        .field { 
+            width: 950px; height: 600px; background: #15803d; border: 4px solid #f8fafc; position: relative;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 95px, rgba(0,0,0,0.1) 95px, rgba(0,0,0,0.1) 190px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Oyuncu Kartı Tasarımı */
+        .player {
+            position: absolute; width: 80px; padding: 6px; border-radius: 8px;
+            text-align: center; font-weight: 800; font-size: 10px;
+            cursor: grab; user-select: none; z-index: 20;
+            transform: translate(-50%, -50%);
+            transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .player:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 100; }
+        
+        .team-a { background: #e11d48; border: 2px solid #9f1239; color: white; }
+        .team-b { background: #2563eb; border: 2px solid #1e40af; color: white; }
+        
+        .vest-on { 
+            background: #fbbf24 !important; color: #1e293b !important; 
+            border: 2px dashed #92400e !important; 
+            box-shadow: 0 0 15px #fbbf24; 
+        }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+        /* Kaydırma çubuğu özelleştirme */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
-<style>
-body { 
-    background: #020617; 
-    color: white; 
-    font-family: sans-serif; 
-    overflow-x: hidden; 
-    touch-action: manipulation;
-}
-
-/* ===== LAYOUT ===== */
-.app-layout { 
-    display: flex; 
-    align-items: stretch; 
-    justify-content: center; 
-    gap: 0; 
-    margin-top: 10px;
-    flex-direction: column;
-}
-@media (min-width: 1024px) {
-    .app-layout { flex-direction: row; }
-}
-
-/* ===== SIDE PANELS ===== */
-.side-panel {
-    width: 100%;
-    max-width: 950px;
-    background: #0f172a;
-    border: 2px solid #1e293b;
-    padding: 15px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    z-index: 50;
-}
-@media (min-width: 1024px) {
-    .side-panel { width: 160px; }
-}
-
-.side-panel-left { 
-    border-radius: 15px; 
-    border-left: 4px solid #be123c; 
-}
-.side-panel-right { 
-    border-radius: 15px; 
-    border-right: 4px solid #1d4ed8; 
-}
-
-/* ===== FIELD ===== */
-.field { 
-    width: 100%;
-    max-width: 950px;
-    aspect-ratio: 19 / 12;
-    height: auto;
-    background: #14532d; 
-    border: 4px solid white; 
-    position: relative;
-    background-image: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 95px,
-        rgba(0,0,0,0.05) 95px,
-        rgba(0,0,0,0.05) 190px
-    );
-    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-}
-
-/* ===== PLAYER ===== */
-.player {
-    position: absolute; 
-    width: 85px; 
-    padding: 8px; 
-    border-radius: 12px;
-    text-align: center; 
-    font-weight: bold; 
-    font-size: 9px;
-    cursor: move; 
-    user-select: none; 
-    z-index: 20;
-    box-shadow: 0 10px 15px rgba(0,0,0,0.5);
-    transform: translate(-50%, -50%);
-    transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1),
-                top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-}
-@media (min-width: 640px) {
-    .player { font-size: 10px; }
-}
-
-.team-a { background: #be123c; border: 2px solid #4c0519; }
-.team-b { background: #1d4ed8; border: 2px solid #1e3a8a; }
-
-.vest-on { 
-    background: #fbbf24 !important; 
-    color: #000 !important; 
-    border: 2px dashed #000 !important; 
-    box-shadow: 0 0 20px #fbbf24; 
-}
-
-/* ===== INPUTS ===== */
-input[type="range"] { 
-    width: 100%; 
-    height: 24px;
-    accent-color: #10b981; 
-    cursor: pointer; 
-}
-
-.pos-btn { 
-    font-size: 9px; 
-    padding: 2px 4px; 
-    border-radius: 4px; 
-    background: #1e293b; 
-    transition: 0.2s; 
-    color: #94a3b8; 
-    border: 1px solid #334155; 
-}
-.pos-btn.active { 
-    background: #10b981; 
-    font-weight: bold; 
-    color: white; 
-    border-color: #059669; 
-}
-
-/* ===== FIELD MARKS ===== */
-.mid-line { 
-    position: absolute; 
-    left: 50%; 
-    top: 0; 
-    width: 2px; 
-    height: 100%; 
-    background: white; 
-    z-index: 5; 
-}
-.center-circle { 
-    position: absolute; 
-    left: 50%; 
-    top: 50%; 
-    transform: translate(-50%,-50%); 
-    width: 140px; 
-    height: 140px; 
-    border: 2px solid white; 
-    border-radius: 50%; 
-    z-index: 4; 
-}
-</style>
+        .field-container { overflow-x: auto; padding: 20px; cursor: crosshair; }
+    </style>
 </head>
+<body class="bg-slate-950">
 
-<body class="p-4">
+<div class="max-w-7xl mx-auto p-2 md:p-6">
+    <div class="bg-slate-900 p-4 rounded-t-2xl border-b border-slate-800 flex flex-wrap items-center gap-4">
+        <div class="flex flex-col grow sm:grow-0">
+            <label class="text-[10px] text-slate-400 font-bold uppercase mb-1">Oyuncu Sayısı</label>
+            <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-800 text-white p-2 rounded-lg text-sm border border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500"></select>
+        </div>
+        
+        <div class="flex flex-wrap gap-2 grow lg:grow-0">
+            <button onclick="distributeAndAlign()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-lg flex-1 sm:flex-none uppercase tracking-wider">
+                Kadroları Diz
+            </button>
+            <button onclick="randomVest()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-lg flex-1 sm:flex-none uppercase tracking-wider">
+                Yelek At
+            </button>
+        </div>
 
-<!-- === BURADAN SONRASI: SENİN İLK ATTIĞIN HTML + JS === -->
-<!-- HİÇ DEĞİŞTİRİLMEDİ -->
+        <div class="flex gap-2 ml-auto">
+            <button onclick="exportImage()" class="bg-slate-700 hover:bg-slate-600 p-2.5 rounded-xl transition-all active:scale-90" title="Resim Olarak Kaydet">
+                📸 <span class="hidden sm:inline ml-1 text-xs font-bold uppercase">Resim</span>
+            </button>
+            <button onclick="location.reload()" class="bg-rose-900/50 hover:bg-rose-800 text-rose-200 p-2.5 rounded-xl transition-all active:scale-90" title="Sıfırla">
+                🗑️
+            </button>
+        </div>
+    </div>
 
-<!-- (Aynen senin gönderdiğin body içeriği ve <script> bloğu) -->
+    <div id="playerInputs" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-4 bg-slate-900/80 border-b border-slate-800 max-h-56 overflow-y-auto">
+        </div>
 
-<!-- ⚠️ JS KODU AYNEN KORUNDU -->
+    <div class="flex flex-col lg:flex-row bg-slate-900 rounded-b-2xl overflow-hidden">
+        
+        <div class="w-full lg:w-48 bg-slate-900/50 p-4 border-r border-slate-800">
+            <h3 class="text-rose-500 font-black text-xs text-center mb-4 uppercase tracking-[0.2em] border-b border-rose-900/30 pb-2">A Takımı</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[9px] font-bold text-slate-500 block mb-1">DİZİLİŞ</label>
+                    <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-800 text-xs p-2 rounded-lg border border-slate-700 outline-none focus:border-rose-500">
+                        <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+                    </select>
+                </div>
+                <div class="space-y-3 opacity-80">
+                    <div class="slider-group">
+                        <label class="text-[9px] font-bold text-slate-500">DEFANS</label>
+                        <input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                    </div>
+                    <div class="slider-group">
+                        <label class="text-[9px] font-bold text-slate-500">ORTA SAHA</label>
+                        <input type="range" oninput="moveLine('a', 'MID', this.value)" min="-150" max="150" value="0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                    </div>
+                    <div class="slider-group">
+                        <label class="text-[9px] font-bold text-slate-500">FORVET</label>
+                        <input type="range" oninput="moveLine('a', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="field-container flex-1 bg-slate-950/40">
+            <div id="field" class="field mx-auto rounded-lg">
+                <div class="absolute left-1/2 top-0 w-1 h-full bg-white/40"></div>
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/40 rounded-full"></div>
+                <div id="ball" class="absolute w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-grab shadow-2xl z-[100] text-xl transform -translate-x-1/2 -translate-y-1/2" style="left:50%; top:50%">⚽</div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-48 bg-slate-900/50 p-4 border-l border-slate-800">
+            <h3 class="text-blue-500 font-black text-xs text-center mb-4 uppercase tracking-[0.2em] border-b border-blue-900/30 pb-2">B Takımı</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[9px] font-bold text-slate-500 block mb-1">DİZİLİŞ</label>
+                    <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-800 text-xs p-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500">
+                        <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+                    </select>
+                </div>
+                <div class="space-y-3 opacity-80">
+                    <div class="slider-group">
+                        <label class="text-[9px] font-bold text-slate-500">DEFANS</label>
+                        <input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                    <div class="slider-group">
+                        <label class="text-[9px] font-bold text-slate-500">ORTA SAHA</label>
+                        <input type="range" oninput="moveLine('b', 'MID', this.value)" min="-150" max="150" value="0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                    <div class="slider-group">
+                        <label class="text-[9px] font-bold text-slate-500">FORVET</label>
+                        <input type="range" oninput="moveLine('b', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// --- MEVCUT MANTIK (HİÇ BOZULMADI) ---
+let players = [];
+let activeDrag = null, startX, startY, initialX, initialY;
+
+const tacticData = {
+    "3-1-2": { GK:[12,50], DEF:[[32,20],[32,50],[32,80]], MID:[[58,50]], FWD:[[85,30],[85,70]] },
+    "2-2-2": { GK:[12,50], DEF:[[32,30],[32,70]], MID:[[58,30],[58,70]], FWD:[[85,30],[85,70]] },
+    "3-2-1": { GK:[12,50], DEF:[[32,20],[32,50],[32,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
+};
+
+const roleRank = { "GK": 1, "DEF": 2, "MID": 3, "FWD": 4 };
+
+function init() {
+    const sel = document.getElementById('playerCount');
+    for(let i=2; i<=22; i+=2) {
+        let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
+        if(i===12) opt.selected = true; sel.appendChild(opt);
+    }
+    updatePlayerList();
+}
+
+function updatePlayerList() {
+    const count = parseInt(document.getElementById('playerCount').value);
+    if (players.length < count) {
+        for (let i = players.length; i < count; i++) {
+            players.push({ id: i, name: `Oyuncu ${i + 1}`, quality: 5, positions: i < 2 ? ["GK"] : ["MID"] });
+        }
+    }
+    renderInputs(count);
+}
+
+function renderInputs(count) {
+    const container = document.getElementById('playerInputs');
+    container.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+        let p = players[i];
+        container.innerHTML += `
+        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 shadow-sm transition-all hover:border-slate-500">
+            <input type="text" value="${p.name}" oninput="players[${i}].name=this.value" class="w-full bg-slate-900 p-1.5 rounded-lg text-[11px] mb-2 outline-none border border-slate-700 focus:border-emerald-500 font-bold">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[10px] font-black text-slate-500">KALİTE</span>
+                <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-slate-900 text-[11px] rounded p-1 outline-none">
+                    ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${p.quality===n?'selected':''}>${n}</option>`).join('')}
+                </select>
+            </div>
+            <div class="flex flex-wrap gap-1">
+                ${["GK","DEF","MID","FWD"].map(pos => `
+                    <button onclick="togglePos(${i},'${pos}',this)" 
+                        class="flex-1 text-[9px] py-1 rounded-md transition-all font-bold 
+                        ${p.positions.includes(pos) ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}"> 
+                        ${pos} 
+                    </button>`).join('')}
+            </div>
+        </div>`;
+    }
+}
+
+function togglePos(idx, pos, btn) {
+    let p = players[idx];
+    if(p.positions.includes(pos)) {
+        p.positions = p.positions.filter(x => x !== pos);
+        btn.className = "flex-1 text-[9px] py-1 rounded-md transition-all font-bold bg-slate-700 text-slate-400 hover:bg-slate-600";
+    } else {
+        p.positions.push(pos);
+        btn.className = "flex-1 text-[9px] py-1 rounded-md transition-all font-bold bg-emerald-600 text-white";
+    }
+}
+
+function alignTeamWithPreferences(teamArr, teamName, tacKey) {
+    const tac = tacticData[tacKey];
+    let slots = [
+        { role: 'GK', pos: tac.GK },
+        ...tac.DEF.map(p => ({ role: 'DEF', pos: p })),
+        ...tac.MID.map(p => ({ role: 'MID', pos: p })),
+        ...tac.FWD.map(p => ({ role: 'FWD', pos: p }))
+    ];
+
+    let assigned = new Array(teamArr.length).fill(false);
+    slots.forEach((slot, slotIdx) => {
+        let foundIdx = teamArr.findIndex((p, pIdx) => !assigned[pIdx] && p.positions.includes(slot.role));
+        if (foundIdx === -1) foundIdx = teamArr.findIndex((p, pIdx) => !assigned[pIdx]);
+
+        if (foundIdx !== -1) {
+            assigned[foundIdx] = true;
+            const p = teamArr[foundIdx];
+            const el = document.createElement('div');
+            el.className = `player team-${teamName}`;
+            el.innerHTML = `<div class="truncate">${p.name}</div><div class="role-label text-[8px] opacity-60 font-black">${slot.role}</div>`;
+            el.dataset.role = slot.role;
+            el.dataset.team = teamName;
+            
+            let [rawX, rawY] = slot.pos;
+            let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
+            el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
+            makeDraggable(el);
+            document.getElementById('field').appendChild(el);
+        }
+    });
+}
+
+function distributeAndAlign() {
+    const count = parseInt(document.getElementById('playerCount').value);
+    let activePool = players.slice(0, count).sort(() => Math.random() - 0.5);
+    let teamA = [], teamB = [];
+    
+    let gks = activePool.filter(p => p.positions.includes("GK"));
+    if(gks.length >= 2) { 
+        teamA.push(gks[0]); teamB.push(gks[1]); 
+        activePool = activePool.filter(p => p.id !== gks[0].id && p.id !== gks[1].id); 
+    }
+    
+    activePool.sort((a,b) => b.quality - a.quality).forEach(p => {
+        let sumA = teamA.reduce((s,x)=>s+x.quality,0);
+        let sumB = teamB.reduce((s,x)=>s+x.quality,0);
+        (teamA.length < count/2 && (sumA <= sumB || teamB.length >= count/2)) ? teamA.push(p) : teamB.push(p);
+    });
+    
+    document.querySelectorAll('.player:not(#ball)').forEach(e => e.remove());
+    alignTeamWithPreferences(teamA, 'a', document.getElementById('tacticA').value);
+    alignTeamWithPreferences(teamB, 'b', document.getElementById('tacticB').value);
+    setTimeout(resolveCollisions, 200);
+}
+
+function resolveCollisions() {
+    const els = Array.from(document.querySelectorAll('.player'));
+    const radius = 85; 
+    for(let k=0; k<5; k++) {
+        els.forEach(p1 => {
+            els.forEach(p2 => {
+                if (p1 === p2) return;
+                const r1 = p1.getBoundingClientRect();
+                const r2 = p2.getBoundingClientRect();
+                const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
+                const dy = (r1.top + r1.height/2) - (r2.top + r2.height/2);
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < radius) {
+                    const angle = Math.atan2(dy, dx);
+                    const push = (radius - dist);
+                    p1.style.left = (p1.offsetLeft + Math.cos(angle) * push/2) + "px";
+                    p2.style.left = (p2.offsetLeft - Math.cos(angle) * push/2) + "px";
+                }
+            });
+        });
+    }
+}
+
+function realignOnly(teamName) {
+    const tacKey = document.getElementById('tactic' + teamName.toUpperCase()).value;
+    const tac = tacticData[tacKey];
+    const teamPlayers = Array.from(document.querySelectorAll(`.team-${teamName}`));
+    let slots = [tac.GK, ...tac.DEF, ...tac.MID, ...tac.FWD];
+    teamPlayers.forEach((el, i) => {
+        let [rawX, rawY] = slots[i] || [50, 50];
+        let finalX = teamName === 'a' ? (rawX/100)*50 : 100 - ((rawX/100)*50);
+        let role = i === 0 ? "GK" : (i <= tac.DEF.length ? "DEF" : (i <= tac.DEF.length + tac.MID.length ? "MID" : "FWD"));
+        el.dataset.role = role;
+        el.querySelector('.role-label').innerText = role;
+        el.style.left = finalX + "%"; el.style.top = rawY + "%"; el.dataset.baseX = finalX;
+    });
+    setTimeout(resolveCollisions, 600);
+}
+
+function makeDraggable(el) {
+    const start = (e) => {
+        activeDrag = el;
+        const ev = e.touches ? e.touches[0] : e;
+        startX = ev.clientX; startY = ev.clientY;
+        initialX = el.offsetLeft; initialY = el.offsetTop;
+        el.style.transition = "none";
+    };
+    el.onmousedown = start; el.ontouchstart = start;
+}
+
+window.onmousemove = window.ontouchmove = (e) => {
+    if(!activeDrag) return;
+    const ev = e.touches ? e.touches[0] : e;
+    activeDrag.style.left = (initialX + (ev.clientX - startX)) + "px";
+    activeDrag.style.top = (initialY + (ev.clientY - startY)) + "px";
+    resolveCollisions();
+};
+
+window.onmouseup = window.ontouchend = () => { 
+    if(activeDrag) { 
+        activeDrag.style.transition = "left 0.4s ease-out, top 0.4s ease-out"; 
+    } 
+    activeDrag = null; 
+};
+
+function moveLine(team, role, val) {
+    const shift = parseInt(val);
+    document.querySelectorAll('.player').forEach(el => {
+        if(el.dataset.team === team && el.dataset.role === role) {
+            let base = parseFloat(el.dataset.baseX);
+            el.style.left = `calc(${base}% + ${shift}px)`;
+        }
+    });
+    resolveCollisions();
+}
+
+function randomVest() {
+    const teams = ['a', 'b'];
+    const chosen = teams[Math.floor(Math.random() * teams.length)];
+    document.querySelectorAll('.player').forEach(p => p.classList.remove('vest-on'));
+    document.querySelectorAll(`.team-${chosen}`).forEach(p => p.classList.add('vest-on'));
+}
+
+function exportImage() {
+    html2canvas(document.getElementById('field'), { scale: 2, backgroundColor: '#0f172a' }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'taktik_pro_v35.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+}
+
+makeDraggable(document.getElementById('ball'));
+init();
+</script>
 </body>
 </html>
