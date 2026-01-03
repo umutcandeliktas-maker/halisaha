@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro - Kent BT Ekibi</title>
+    <title>Kent BT Ekibi - Taktik Tahtası</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -11,11 +11,12 @@
         body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         #master-container { transform: scale(var(--master-scale)); transform-origin: top center; transition: transform 0.2s; }
 
-        /* ÜST LOGO YAZISI */
-        .brand-text {
-            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-            z-index: 1001; font-size: 12px; font-weight: 900; letter-spacing: 2px;
-            color: rgba(255,255,255,0.4); text-transform: uppercase; pointer-events: none;
+        /* YENİ LOGO TASARIMI */
+        .kent-logo {
+            font-size: 24px; font-weight: 900; letter-spacing: -1px;
+            background: linear-gradient(to right, #10b981, #ffffff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-transform: uppercase; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
         }
 
         /* SAHA */
@@ -27,6 +28,7 @@
         .box-l { left: 0; top: 25%; width: 15%; height: 50%; border-left: 0; }
         .box-r { right: 0; top: 25%; width: 15%; height: 50%; border-right: 0; }
         
+        /* OYUNCU */
         .player {
             position: absolute; width: 75px; padding: 5px; border-radius: 12px;
             text-align: center; font-weight: 800; font-size: 10px;
@@ -37,12 +39,13 @@
         .team-b { background: linear-gradient(135deg, #2563eb, #1e40af); border: 2px solid #fff; color: white; }
         .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; transform: translate(-50%, -50%) scale(1.1); }
 
+        /* UI PANELLERİ */
         .ui-panel { 
             background: rgba(15, 23, 42, 0.95); border: 1px solid #334155; 
             backdrop-filter: blur(12px); overflow: hidden; resize: both; 
             display: flex; flex-direction: column; min-height: 200px;
         }
-        .panel-header { background: #1e293b; color: #94a3b8; font-size: 9px; font-weight: 900; padding: 8px; cursor: move; border-bottom: 1px solid #334155; }
+        .panel-header { background: #1e293b; color: #94a3b8; font-size: 9px; font-weight: 900; padding: 10px; cursor: move; border-bottom: 1px solid #334155; }
         .smart-content { display: flex; flex-direction: column; justify-content: space-evenly; height: 100%; flex: 1; padding: 1.5rem; }
         #playerInputs { display: flex; flex-wrap: wrap; justify-content: space-evenly; align-content: space-evenly; gap: 12px; height: 100%; width: 100%; }
         .player-card { width: 155px; flex-shrink: 0; }
@@ -50,41 +53,39 @@
 </head>
 <body class="p-2 sm:p-4">
 
-<div class="brand-text">Kent BT Ekibi Sunar</div>
-
-<nav class="fixed top-0 left-0 w-full z-[100] bg-slate-900/95 border-b border-slate-800 p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
-    <div class="flex items-center gap-4">
-        <h1 class="text-xl font-black italic text-emerald-500">PRO BOARD</h1>
+<nav class="fixed top-0 left-0 w-full z-[100] bg-slate-900/95 border-b border-slate-800 p-4 flex flex-wrap items-center justify-between gap-4 shadow-2xl">
+    <div class="flex items-center gap-6">
+        <div class="kent-logo">KENT BT EKİBİ SUNAR</div>
         <div class="flex items-center gap-2 bg-slate-950 px-3 py-1 rounded-full border border-slate-800">
-            <input type="range" min="0.5" max="1.3" step="0.1" value="1" id="zoomRange" oninput="changeZoom(this.value)" class="w-20 accent-emerald-500">
+            <input type="range" min="0.5" max="1.3" step="0.1" value="1" id="zoomRange" oninput="changeZoom(this.value); saveAll();" class="w-24 accent-emerald-500">
         </div>
     </div>
     
     <div class="flex items-center gap-2">
-        <button onclick="clearCache()" class="bg-rose-500/10 text-rose-500 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-rose-500/20">🧹 SIFIRLA</button>
-        <button onclick="resetLayout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-black">🔄 DÜZEN</button>
-        <button onclick="exportImage()" class="bg-emerald-600 text-white px-5 py-2 rounded-xl text-[10px] font-black">📸 İNDİR</button>
+        <button onclick="clearCache()" class="bg-rose-500/10 text-rose-500 px-4 py-2 rounded-xl text-[11px] font-black hover:bg-rose-500/20">🧹 VERİLERİ SİL</button>
+        <button onclick="resetLayout()" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-[11px] font-black hover:bg-slate-700">🔄 DÜZENİ SIFIRLA</button>
+        <button onclick="exportImage()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl text-[11px] font-black shadow-lg">📸 RESMİ İNDİR</button>
     </div>
 </nav>
 
-<div id="master-container" class="pt-24 pb-10">
+<div id="master-container" class="pt-28 pb-10">
     <div class="max-w-full mx-auto space-y-6 px-4">
         
         <div id="panelInputs" class="ui-panel rounded-3xl shadow-2xl w-full" data-id="main-panel">
-            <div class="panel-header">OYUNCU LİSTESİ</div>
+            <div class="panel-header">OYUNCU LİSTESİ VE KALİTE AYARLARI</div>
             <div class="p-4 bg-slate-900/40 border-b border-slate-800 flex flex-wrap items-center gap-4 shrink-0">
-                <select id="playerCount" onchange="updatePlayerList(); saveAll();" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800"></select>
-                <button onclick="distributeAndAlign(); saveAll();" class="bg-indigo-600 px-6 py-2 rounded-xl text-[10px] font-black text-white">Dizilişi Kur</button>
-                <button onclick="randomVest()" class="bg-amber-500 px-6 py-2 rounded-xl text-[10px] font-black text-black ml-auto">Yelek At</button>
+                <select id="playerCount" onchange="updatePlayerList(); saveAll();" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800 outline-none cursor-pointer"></select>
+                <button onclick="distributeAndAlign(); saveAll();" class="bg-indigo-600 px-6 py-2 rounded-xl text-[10px] font-black text-white hover:bg-indigo-500 shadow-lg shadow-indigo-900/40 transition-all">Dizilişi Kur</button>
+                <button onclick="randomVest()" class="bg-amber-500 px-6 py-2 rounded-xl text-[10px] font-black text-black ml-auto hover:bg-amber-400">Yelek At</button>
             </div>
             <div class="flex-1 p-6 overflow-hidden"><div id="playerInputs"></div></div>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-6 items-stretch">
             <div id="panelA" class="ui-panel w-full lg:w-72 rounded-3xl" data-id="panelA">
-                <div class="panel-header">A TAKIMI</div>
+                <div class="panel-header">A TAKIMI AYARLARI</div>
                 <div class="smart-content">
-                    <select id="tacticA" onchange="realignOnly('a'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
+                    <select id="tacticA" onchange="realignOnly('a'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800 outline-none">
                         <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
                     </select>
                     <div class="flex flex-col justify-evenly flex-1 pt-4">
@@ -96,7 +97,7 @@
             </div>
 
             <div id="panelField" class="ui-panel flex-1 rounded-3xl min-h-[550px]" data-id="panelField">
-                <div class="panel-header">SAHA</div>
+                <div class="panel-header">TAKTIK SAHASI</div>
                 <div id="field" class="field rounded-2xl overflow-hidden flex-1">
                     <div class="absolute left-1/2 top-0 w-0.5 h-full bg-white/30"></div>
                     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 border-2 border-white/30 rounded-full"></div>
@@ -106,9 +107,9 @@
             </div>
 
             <div id="panelB" class="ui-panel w-full lg:w-72 rounded-3xl" data-id="panelB">
-                <div class="panel-header">B TAKIMI</div>
+                <div class="panel-header">B TAKIMI AYARLARI</div>
                 <div class="smart-content">
-                    <select id="tacticB" onchange="realignOnly('b'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
+                    <select id="tacticB" onchange="realignOnly('b'); saveAll();" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800 outline-none">
                         <option value="3-1-2">3-1-2</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
                     </select>
                     <div class="flex flex-col justify-evenly flex-1 pt-4">
@@ -126,12 +127,7 @@
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY, dragType = "";
 
-const tacticData = {
-    "3-1-2": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[55,50]], FWD:[[82,30],[82,70]] },
-    "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[82,30],[82,70]] },
-    "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
-};
-
+// KAYDETME FONKSİYONU
 function saveAll() {
     const data = {
         players: players,
@@ -145,24 +141,29 @@ function saveAll() {
         },
         panelStyles: {}
     };
+    
     document.querySelectorAll('.ui-panel').forEach(p => {
-        data.panelStyles[p.dataset.id] = { width: p.style.width, height: p.style.height, top: p.style.top, left: p.style.left, position: p.style.position };
+        data.panelStyles[p.dataset.id] = {
+            width: p.style.width,
+            height: p.style.height,
+            top: p.style.top,
+            left: p.style.left,
+            position: p.style.position || 'relative'
+        };
     });
-    localStorage.setItem('tacticBoardSave_v2', JSON.stringify(data));
+    
+    localStorage.setItem('kentBT_TacticSave_v3', JSON.stringify(data));
 }
 
-function initPlayerCountSelect() {
+function loadAll() {
     const sel = document.getElementById('playerCount');
     sel.innerHTML = "";
     for(let i=2; i<=22; i+=2) {
         let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
         if(i===12) opt.selected = true; sel.appendChild(opt);
     }
-}
 
-function loadAll() {
-    initPlayerCountSelect(); // Önce select'i doldur
-    const saved = localStorage.getItem('tacticBoardSave_v2');
+    const saved = localStorage.getItem('kentBT_TacticSave_v3');
     if(!saved) { updatePlayerList(); initPanelControls(); return; }
     
     const data = JSON.parse(saved);
@@ -190,30 +191,30 @@ function loadAll() {
     initPanelControls();
 }
 
-function changeZoom(v) { document.documentElement.style.setProperty('--master-scale', v); }
-
-function clearCache() {
-    if(confirm("Tüm kayıtlı veriler silinecek?")) { localStorage.clear(); location.reload(); }
-}
-
-function resetLayout() {
-    document.querySelectorAll('.ui-panel').forEach(p => { p.style.position = ""; p.style.left = ""; p.style.top = ""; p.style.width = ""; p.style.height = ""; });
-    saveAll();
-}
+// PANEL BOYUTLARINI TAKİP ET (YENİ EKLEDİM)
+const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        if(entry.target.classList.contains('ui-panel')) saveAll();
+    }
+});
 
 function initPanelControls() {
     document.querySelectorAll('.ui-panel').forEach(panel => {
+        resizeObserver.observe(panel); // Boyut değişimini izle
         const header = panel.querySelector('.panel-header');
         header.onmousedown = header.ontouchstart = (e) => {
             activeDrag = panel; dragType = "panel";
             panel.style.position = "absolute";
             const ev = e.touches ? e.touches[0] : e;
+            const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
             startX = ev.clientX; startY = ev.clientY;
             initialX = panel.offsetLeft; initialY = panel.offsetTop;
             panel.style.zIndex = 1000;
         };
     });
 }
+
+function changeZoom(v) { document.documentElement.style.setProperty('--master-scale', v); }
 
 function updatePlayerList(isLoad = false) {
     const count = parseInt(document.getElementById('playerCount').value);
@@ -225,16 +226,16 @@ function updatePlayerList(isLoad = false) {
     }
     const container = document.getElementById('playerInputs');
     container.innerHTML = players.map((p, i) => `
-        <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-inner">
+        <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-inner hover:border-emerald-500/30 transition-all">
             <input type="text" placeholder="OYUNCU ${i+1}" value="${p.name}" oninput="players[${i}].name=this.value; saveAll();" class="w-full bg-slate-950 p-2 text-[10px] rounded-lg font-black border border-slate-800 outline-none text-emerald-400 uppercase">
             <div class="flex justify-between items-center text-[8px] font-black text-slate-500 uppercase">
                 <span>Kalite</span>
-                <select onchange="players[${i}].quality=parseInt(this.value); saveAll();" class="bg-transparent text-white">
+                <select onchange="players[${i}].quality=parseInt(this.value); saveAll();" class="bg-transparent text-white outline-none">
                     ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${p.quality===n?'selected':''}>${n}</option>`).join('')}
                 </select>
             </div>
             <div class="grid grid-cols-2 gap-1">
-                ${["GK","DEF","MID","FWD"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="text-[8px] py-1.5 rounded-lg font-black transition-all ${p.positions.includes(pos) ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-500'}">${pos}</button>`).join('')}
+                ${["GK","DEF","MID","FWD"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="text-[8px] py-1.5 rounded-lg font-black transition-all ${p.positions.includes(pos) ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' : 'bg-slate-800 text-slate-500'}">${pos}</button>`).join('')}
             </div>
         </div>`).join('');
 }
@@ -257,14 +258,19 @@ function distributeAndAlign() {
 }
 
 function alignTeam(teamArr, teamName, tacKey) {
-    const tac = tacticData[tacKey];
+    const tac = {
+        "3-1-2": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[55,50]], FWD:[[82,30],[82,70]] },
+        "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[82,30],[82,70]] },
+        "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
+    }[tacKey];
+    
     let slots = [{role:'GK', pos:tac.GK}, ...tac.DEF.map(p=>({role:'DEF',pos:p})), ...tac.MID.map(p=>({role:'MID',pos:p})), ...tac.FWD.map(p=>({role:'FWD',pos:p}))];
+    
     teamArr.forEach((p, i) => {
         if(!slots[i]) return;
         const el = document.createElement('div');
         el.className = `player team-${teamName}`;
-        let displayName = p.name === "" ? `OYUNCU ${p.id+1}` : p.name;
-        el.innerHTML = `<div class="truncate uppercase">${displayName}</div><div class="text-[7px] opacity-60 font-black">${slots[i].role}</div>`;
+        el.innerHTML = `<div class="truncate uppercase">${p.name || 'OYUNCU '+(p.id+1)}</div><div class="text-[7px] opacity-60 font-black">${slots[i].role}</div>`;
         el.dataset.role = slots[i].role; el.dataset.team = teamName;
         let [rx, ry] = slots[i].pos;
         let fx = teamName === 'a' ? rx/2 : 100 - rx/2;
@@ -292,8 +298,8 @@ window.onmousemove = window.ontouchmove = (e) => {
     const ev = e.touches ? e.touches[0] : e;
     const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
     if(dragType === "panel") {
-        activeDrag.style.left = (initialX + (ev.clientX - startX * scale)) + "px";
-        activeDrag.style.top = (initialY + (ev.clientY - startY * scale)) + "px";
+        activeDrag.style.left = (initialX + (ev.clientX - startX)) + "px";
+        activeDrag.style.top = (initialY + (ev.clientY - startY)) + "px";
     } else {
         activeDrag.style.left = (initialX + (ev.clientX / scale - startX)) + "px";
         activeDrag.style.top = (initialY + (ev.clientY / scale - startY)) + "px";
@@ -308,31 +314,30 @@ window.onmouseup = window.ontouchend = () => {
     activeDrag = null;
 };
 
-function moveLine(team, role, val) {
+function moveLine(t, r, v) {
     document.querySelectorAll('.player').forEach(el => {
-        if(el.dataset.team === team && el.dataset.role === role) {
-            let base = parseFloat(el.dataset.baseX);
-            el.style.left = `calc(${base}% + ${val}px)`;
+        if(el.dataset.team === t && el.dataset.role === r) {
+            el.style.left = `calc(${el.dataset.baseX}% + ${v}px)`;
         }
     });
 }
 
+function clearCache() { if(confirm("KENT BT: Tüm veriler temizlensin mi?")) { localStorage.clear(); location.reload(); } }
+function resetLayout() { document.querySelectorAll('.ui-panel').forEach(p => { p.style = ""; }); saveAll(); }
 function randomVest() {
-    const team = Math.random() > 0.5 ? 'a' : 'b';
+    const t = Math.random() > 0.5 ? 'a' : 'b';
     document.querySelectorAll('.player').forEach(p => {
         p.classList.remove('vest-on');
-        if(p.classList.contains(`team-${team}`)) p.classList.add('vest-on');
+        if(p.classList.contains(`team-${t}`)) p.classList.add('vest-on');
     });
 }
-
 function exportImage() {
     html2canvas(document.getElementById('field'), { scale: 3 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'taktik_board_pro.png'; link.href = canvas.toDataURL(); link.click();
+        link.download = 'kent_bt_taktik.png'; link.href = canvas.toDataURL(); link.click();
     });
 }
-
-function realignOnly(t) { distributeAndAlign(); }
+function realignOnly() { distributeAndAlign(); }
 makeDraggable(document.getElementById('ball'), "player");
 loadAll();
 </script>
