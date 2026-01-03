@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taktik Pro v40 - Smart Space</title>
+    <title>Taktik Pro v41 - Ultra Responsive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -33,51 +33,52 @@
 
         /* DİNAMİK UI PANELLERİ */
         .ui-panel { 
-            background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; 
+            background: rgba(15, 23, 42, 0.95); border: 1px solid #334155; 
             backdrop-filter: blur(12px); overflow: hidden; resize: both; 
             display: flex; flex-direction: column; min-height: 200px;
         }
         .panel-header { background: #1e293b; color: #94a3b8; font-size: 9px; font-weight: 900; padding: 8px; cursor: move; flex-shrink: 0; border-bottom: 1px solid #334155; }
         
-        /* SMART GRID: Hem yatayda auto-fill hem dikeyde esnek dağılım */
-        .dynamic-content-area {
+        /* SMART SPACING (ESNEK İÇERİK) */
+        .smart-content {
             display: flex;
             flex-direction: column;
-            flex: 1; /* Panelin kalan tüm boşluğunu doldurur */
+            justify-content: space-evenly; /* DİKEYDE EŞİT DAĞILIM */
+            height: 100%;
+            flex: 1;
             padding: 1.5rem;
-            overflow: hidden;
         }
 
         #playerInputs {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-evenly; /* Yatayda eşit boşluk */
-            align-content: space-evenly; /* DİKEYDE EŞİT BOŞLUK */
-            gap: 15px;
-            height: 100%; /* İçerik alanının boyuna yayılır */
+            justify-content: space-evenly;
+            align-content: space-evenly;
+            gap: 12px;
+            height: 100%;
             width: 100%;
         }
 
-        .player-card {
-            width: 160px; /* Sabit genişlik ama esnek dizilim */
-            flex-shrink: 0;
-        }
+        .player-card { width: 155px; flex-shrink: 0; }
+
+        /* Özel Slider Tasarımı */
+        input[type="range"] { cursor: pointer; }
     </style>
 </head>
 <body class="p-2 sm:p-4">
 
-<nav class="fixed top-0 left-0 w-full z-[100] bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
+<nav class="fixed top-0 left-0 w-full z-[100] bg-slate-900/95 border-b border-slate-800 p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
     <div class="flex items-center gap-4">
-        <h1 class="text-xl font-black italic text-emerald-500 underline decoration-white/20">PRO BOARD</h1>
+        <h1 class="text-xl font-black italic text-emerald-500">PRO BOARD</h1>
         <div class="flex items-center gap-2 bg-slate-950 px-3 py-1 rounded-full border border-slate-800">
             <input type="range" min="0.5" max="1.3" step="0.1" value="1" oninput="document.documentElement.style.setProperty('--master-scale', this.value)" class="w-20 accent-emerald-500">
         </div>
     </div>
     
     <div class="flex items-center gap-2">
-        <button onclick="clearCache()" class="bg-rose-500/10 text-rose-500 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-rose-500/20 transition-all">🧹 VERİLERİ SİL</button>
-        <button onclick="resetLayout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-slate-700 transition-all">🔄 DÜZENİ SIFIRLA</button>
-        <button onclick="exportImage()" class="bg-emerald-600 text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-lg">📸 RESMİ İNDİR</button>
+        <button onclick="clearCache()" class="bg-rose-500/10 text-rose-500 px-3 py-2 rounded-xl text-[10px] font-black hover:bg-rose-500/20">🧹 VERİLERİ SİL</button>
+        <button onclick="resetLayout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-xl text-[10px] font-black">🔄 DÜZENİ SIFIRLA</button>
+        <button onclick="exportImage()" class="bg-emerald-600 text-white px-5 py-2 rounded-xl text-[10px] font-black">📸 İNDİR</button>
     </div>
 </nav>
 
@@ -87,32 +88,34 @@
         <div id="panelInputs" class="ui-panel rounded-3xl shadow-2xl w-full">
             <div class="panel-header"><span>↕ TAŞI / ↔ BOYUTLANDIR (OYUNCU LİSTESİ)</span></div>
             <div class="p-4 bg-slate-900/40 border-b border-slate-800 flex flex-wrap items-center gap-4 shrink-0">
-                <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800 outline-none"></select>
-                <button onclick="distributeAndAlign()" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-xl text-[10px] font-black text-white transition-all shadow-lg shadow-indigo-900/40">Dizilişi Kur</button>
+                <select id="playerCount" onchange="updatePlayerList()" class="bg-slate-950 text-white px-4 py-2 rounded-xl text-xs font-black border border-slate-800"></select>
+                <button onclick="distributeAndAlign()" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-xl text-[10px] font-black text-white transition-all">Dizilişi Kur</button>
                 <button onclick="randomVest()" class="bg-amber-500 hover:bg-amber-400 px-6 py-2 rounded-xl text-[10px] font-black text-black ml-auto">Yelek At</button>
             </div>
-            
-            <div class="dynamic-content-area">
+            <div class="flex-1 p-6 overflow-hidden">
                 <div id="playerInputs"></div>
             </div>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <div class="flex flex-col lg:flex-row gap-6 items-stretch">
             <div id="panelA" class="ui-panel w-full lg:w-72 rounded-3xl shrink-0">
-                <div class="panel-header">A TAKIMI</div>
-                <div class="p-6 space-y-6">
-                    <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
-                        <option value="3-1-2">3-1-2 (Dengeli)</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                    </select>
-                    <div class="space-y-4">
-                        <input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none">
-                        <input type="range" oninput="moveLine('a', 'MID', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none">
-                        <input type="range" oninput="moveLine('a', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none">
+                <div class="panel-header">A TAKIMI AYAR</div>
+                <div class="smart-content">
+                    <div class="space-y-2">
+                        <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest">Taktik</span>
+                        <select id="tacticA" onchange="realignOnly('a')" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
+                            <option value="3-1-2">3-1-2 (Dengeli)</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col justify-evenly flex-1 pt-4">
+                        <div class="space-y-1"><label class="text-[8px] text-slate-500 font-bold">DEFANS</label><input type="range" oninput="moveLine('a', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-slate-500 font-bold">ORTA SAHA</label><input type="range" oninput="moveLine('a', 'MID', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-slate-500 font-bold">FORVET</label><input type="range" oninput="moveLine('a', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none"></div>
                     </div>
                 </div>
             </div>
 
-            <div id="panelField" class="ui-panel flex-1 rounded-3xl bg-slate-900/20 p-4 min-h-[550px] min-w-[350px]">
+            <div id="panelField" class="ui-panel flex-1 rounded-3xl bg-slate-900/20 p-4 min-h-[550px]">
                 <div class="panel-header">SAHA</div>
                 <div id="field" class="field rounded-2xl overflow-hidden shadow-inner">
                     <div class="absolute left-1/2 top-0 w-0.5 h-full bg-white/30"></div>
@@ -123,15 +126,18 @@
             </div>
 
             <div id="panelB" class="ui-panel w-full lg:w-72 rounded-3xl shrink-0">
-                <div class="panel-header">B TAKIMI</div>
-                <div class="p-6 space-y-6">
-                    <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
-                        <option value="3-1-2">3-1-2 (Dengeli)</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
-                    </select>
-                    <div class="space-y-4">
-                        <input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none">
-                        <input type="range" oninput="moveLine('b', 'MID', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none">
-                        <input type="range" oninput="moveLine('b', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none">
+                <div class="panel-header">B TAKIMI AYAR</div>
+                <div class="smart-content">
+                    <div class="space-y-2">
+                        <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest">Taktik</span>
+                        <select id="tacticB" onchange="realignOnly('b')" class="w-full bg-slate-950 p-3 rounded-xl text-xs font-bold border border-slate-800">
+                            <option value="3-1-2">3-1-2 (Dengeli)</option><option value="2-2-2">2-2-2</option><option value="3-2-1">3-2-1</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col justify-evenly flex-1 pt-4">
+                        <div class="space-y-1"><label class="text-[8px] text-slate-500 font-bold">DEFANS</label><input type="range" oninput="moveLine('b', 'DEF', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-slate-500 font-bold">ORTA SAHA</label><input type="range" oninput="moveLine('b', 'MID', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-slate-500 font-bold">FORVET</label><input type="range" oninput="moveLine('b', 'FWD', this.value)" min="-150" max="150" value="0" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none"></div>
                     </div>
                 </div>
             </div>
@@ -189,16 +195,16 @@ function updatePlayerList() {
     });
     const container = document.getElementById('playerInputs');
     container.innerHTML = players.map((p, i) => `
-        <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-inner hover:border-emerald-500/30 transition-all">
+        <div class="player-card bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
             <input type="text" placeholder="OYUNCU ${i+1}" oninput="players[${i}].name=this.value" class="w-full bg-slate-950 p-2 text-[10px] rounded-lg font-black border border-slate-800 outline-none text-emerald-400 uppercase">
-            <div class="flex justify-between items-center text-[8px] font-black text-slate-500 uppercase tracking-tighter">
+            <div class="flex justify-between items-center text-[8px] font-black text-slate-500 uppercase">
                 <span>Kalite</span>
                 <select onchange="players[${i}].quality=parseInt(this.value)" class="bg-transparent text-white">
                     ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${p.quality===n?'selected':''}>${n}</option>`).join('')}
                 </select>
             </div>
             <div class="grid grid-cols-2 gap-1">
-                ${["GK","DEF","MID","FWD"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="text-[8px] py-1.5 rounded-lg font-black transition-all ${p.positions.includes(pos) ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40' : 'bg-slate-800 text-slate-500'}">${pos}</button>`).join('')}
+                ${["GK","DEF","MID","FWD"].map(pos => `<button onclick="togglePos(${i},'${pos}',this)" class="text-[8px] py-1.5 rounded-lg font-black transition-all ${p.positions.includes(pos) ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-500'}">${pos}</button>`).join('')}
             </div>
         </div>`).join('');
 }
