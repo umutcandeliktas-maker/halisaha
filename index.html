@@ -127,7 +127,6 @@
 let players = [];
 let activeDrag = null, startX, startY, initialX, initialY, dragType = "";
 
-// HÜSEYİN DOĞAN KONTROLÜ (YENİ)
 function checkHuseyin(val, index, inputEl) {
     if (val.toLowerCase().trim() === "hüseyin doğan") {
         alert("Ne hüseyinmi kaç kaç kaç");
@@ -214,7 +213,7 @@ function updatePlayerList(isLoad = false) {
     const count = parseInt(document.getElementById('playerCount').value);
     if(!isLoad) {
         players = Array.from({length: count}, (_, i) => {
-            let initialPos = (i < 2) ? ["GK"] : ["MID"];
+            let initialPos = (i < 2) ? ["GK"] : (i < 6 ? ["DEF"] : (i < 10 ? ["MID"] : ["FWD"]));
             return players[i] || { id: i, name: "", quality: 5, positions: initialPos };
         });
     }
@@ -238,17 +237,29 @@ function updatePlayerList(isLoad = false) {
 
 function togglePos(idx, pos, btn) {
     let p = players[idx];
-    p.positions.includes(pos) ? p.positions = p.positions.filter(x => x !== pos) : p.positions.push(pos);
+    p.positions = [pos]; // Tek mevki seçimi sağlamak mevkilerin karışmasını engeller
     updatePlayerList(true);
     saveAll();
 }
 
 function distributeAndAlign() {
     const count = parseInt(document.getElementById('playerCount').value);
-    let teamA = [], teamB = [];
-    let pool = [...players].slice(0, count).sort((a,b) => b.quality - a.quality);
-    pool.forEach((p, i) => (i % 2 === 0 ? teamA : teamB).push(p));
     document.querySelectorAll('.player:not(#ball)').forEach(e => e.remove());
+
+    let activePlayers = [...players].slice(0, count);
+    
+    // Mevkilere göre ayırarak sıralı dağıtım yapıyoruz
+    let teamA = [], teamB = [];
+    const roles = ["GK", "DEF", "MID", "FWD"];
+
+    roles.forEach(role => {
+        let rolePool = activePlayers.filter(p => p.positions.includes(role));
+        rolePool.forEach((p, i) => {
+            if(i % 2 === 0) teamA.push({player: p, role: role});
+            else teamB.push({player: p, role: role});
+        });
+    });
+
     alignTeam(teamA, 'a', document.getElementById('tacticA').value);
     alignTeam(teamB, 'b', document.getElementById('tacticB').value);
 }
@@ -259,13 +270,27 @@ function alignTeam(teamArr, teamName, tacKey) {
         "2-2-2": { GK:[8,50], DEF:[[28,30],[28,70]], MID:[[55,30],[55,70]], FWD:[[82,30],[82,70]] },
         "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
     }[tacKey];
-    teamArr.forEach((p, i) => {
-        let slot = [ {role:'GK', pos:tac.GK}, ...tac.DEF.map(p=>({role:'DEF',pos:p})), ...tac.MID.map(p=>({role:'MID',pos:p})), ...tac.FWD.map(p=>({role:'FWD',pos:p})) ][i];
-        if(!slot) return;
+
+    // Önce kalıpları (slotları) hazırla
+    let slots = [
+        {role:'GK', pos:tac.GK},
+        ...tac.DEF.map(p=>({role:'DEF',pos:p})),
+        ...tac.MID.map(p=>({role:'MID',pos:p})),
+        ...tac.FWD.map(p=>({role:'FWD',pos:p}))
+    ];
+
+    // Mevkilere göre eşleşen slotlara yerleştir
+    teamArr.forEach((item) => {
+        let slotIndex = slots.findIndex(s => s.role === item.role);
+        if(slotIndex === -1) slotIndex = 0; // Bulamazsa ilk boşluğa koy
+        
+        let slot = slots.splice(slotIndex, 1)[0];
+        
         const el = document.createElement('div');
         el.className = `player team-${teamName}`;
-        el.innerHTML = `<div class="truncate uppercase">${p.name || 'OYUNCU '+(p.id+1)}</div><div class="text-[7px] opacity-60 font-black">${slot.role}</div>`;
-        el.dataset.role = slot.role; el.dataset.team = teamName;
+        el.innerHTML = `<div class="truncate uppercase">${item.player.name || 'OYUNCU '+(item.player.id+1)}</div><div class="text-[7px] opacity-60 font-black">${item.role}</div>`;
+        el.dataset.role = item.role; el.dataset.team = teamName;
+        
         let [rx, ry] = slot.pos;
         let fx = teamName === 'a' ? rx/2 : 100 - rx/2;
         el.style.left = fx + "%"; el.style.top = ry + "%"; el.dataset.baseX = fx;
@@ -290,13 +315,13 @@ function makeDraggable(el, type) {
 window.onmousemove = window.ontouchmove = (e) => {
     if(!activeDrag) return;
     const ev = e.touches ? e.touches[0] : e;
+    const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
     if(dragType === "panel") {
         activeDrag.style.left = (initialX + (ev.clientX - startX)) + "px";
         activeDrag.style.top = (initialY + (ev.clientY - startY)) + "px";
     } else {
-        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--master-scale'));
-        activeDrag.style.left = (initialX + (ev.clientX / scale - startX / scale)) + "px";
-        activeDrag.style.top = (initialY + (ev.clientY / scale - startY / scale)) + "px";
+        activeDrag.style.left = (initialX + (ev.clientX - startX) / scale) + "px";
+        activeDrag.style.top = (initialY + (ev.clientY - startY) / scale) + "px";
     }
 };
 
@@ -311,7 +336,8 @@ window.onmouseup = window.ontouchend = () => {
 function moveLine(t, r, v) {
     document.querySelectorAll('.player').forEach(el => {
         if(el.dataset.team === t && el.dataset.role === r) {
-            el.style.left = `calc(${el.dataset.baseX}% + ${v}px)`;
+            let base = parseFloat(el.dataset.baseX);
+            el.style.left = `calc(${base}% + ${v}px)`;
         }
     });
 }
