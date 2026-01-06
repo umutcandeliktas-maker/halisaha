@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kent BT Ekibi - Taktik Tahtası v5.0</title>
+    <title>Kent BT Ekibi - Taktik Tahtası v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -31,11 +31,11 @@
             text-align: center; font-weight: 800; font-size: 11px;
             cursor: grab; z-index: 20; transform: translate(-50%, -50%);
             box-shadow: 0 10px 15px rgba(0,0,0,0.4);
-            user-select: none; transition: left 0.4s ease, top 0.4s ease;
+            user-select: none; transition: left 0.4s ease, top 0.4s ease, background 0.3s;
         }
         .team-a { background: linear-gradient(135deg, #e11d48, #9f1239); border: 2px solid #fff; color: white; }
         .team-b { background: linear-gradient(135deg, #2563eb, #1e40af); border: 2px solid #fff; color: white; }
-        .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; transform: translate(-50%, -50%) scale(1.1); }
+        .vest-on { background: #fbbf24 !important; color: #000 !important; border: 2px dashed #000 !important; }
 
         .ui-panel { 
             background: rgba(15, 23, 42, 0.95); border: 1px solid #334155; 
@@ -44,7 +44,6 @@
         }
         .panel-header { background: #1e293b; color: #94a3b8; font-size: 10px; font-weight: 900; padding: 10px; cursor: move; border-bottom: 1px solid #334155; text-transform: uppercase; }
         .player-card { width: 165px; flex-shrink: 0; transition: all 0.2s; }
-        .player-card:hover { border-color: #10b981; background: rgba(15, 23, 42, 0.8); }
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -93,7 +92,7 @@
             </div>
 
             <div id="panelField" class="ui-panel flex-1 rounded-3xl min-h-[550px]" data-id="panelField">
-                <div class="panel-header">TAKTİK SAHASI</div>
+                <div class="panel-header">TAKTİK SAHASI (Renk Değiştirmek İçin Oyuncuya Çift Tıkla)</div>
                 <div id="field" class="field rounded-2xl overflow-hidden flex-1">
                     <div class="absolute left-1/2 top-0 w-0.5 h-full bg-white/30"></div>
                     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 border-2 border-white/30 rounded-full"></div>
@@ -137,7 +136,7 @@ function saveAll() {
     document.querySelectorAll('.ui-panel').forEach(p => {
         data.panelStyles[p.dataset.id] = { width: p.style.width, height: p.style.height, top: p.style.top, left: p.style.left, position: p.style.position || 'relative' };
     });
-    localStorage.setItem('kentBT_TacticFinal', JSON.stringify(data));
+    localStorage.setItem('kentBT_TacticFinal_v51', JSON.stringify(data));
 }
 
 function loadAll() {
@@ -146,7 +145,7 @@ function loadAll() {
         let opt = document.createElement('option'); opt.value = i; opt.innerText = `${i} Oyuncu`;
         if(i===12) opt.selected = true; sel.appendChild(opt);
     }
-    const saved = localStorage.getItem('kentBT_TacticFinal');
+    const saved = localStorage.getItem('kentBT_TacticFinal_v51');
     if(!saved) { updatePlayerList(); initPanelControls(); return; }
     const data = JSON.parse(saved);
     players = data.players;
@@ -196,6 +195,7 @@ function distributeAndAlign() {
 
     let pool = [...players].slice(0, count).sort((a,b) => b.quality - a.quality);
     let teamA = [], teamB = [];
+    
     for(let i=0; i < pool.length; i+=2) {
         if(Math.random() > 0.5) { teamA.push(pool[i]); if(pool[i+1]) teamB.push(pool[i+1]); }
         else { teamB.push(pool[i]); if(pool[i+1]) teamA.push(pool[i+1]); }
@@ -212,33 +212,51 @@ function alignTeam(teamArr, teamName, tacKey) {
         "3-2-1": { GK:[8,50], DEF:[[28,20],[28,50],[28,80]], MID:[[62,30],[62,70]], FWD:[[88,50]] }
     }[tacKey];
 
-    let slots = [{role:'GK', pos:tac.GK, taken:false}, ...tac.DEF.map(p=>({role:'DEF',pos:p,taken:false})), ...tac.MID.map(p=>({role:'MID',pos:p,taken:false})), ...tac.FWD.map(p=>({role:'FWD',pos:p,taken:false}))];
+    let slots = [
+        {role:'GK', pos:tac.GK, taken:false}, 
+        ...tac.DEF.map(p=>({role:'DEF',pos:p,taken:false})), 
+        ...tac.MID.map(p=>({role:'MID',pos:p,taken:false})), 
+        ...tac.FWD.map(p=>({role:'FWD',pos:p,taken:false}))
+    ];
 
-    // ÖNEMLİ: Mevki Karmaşasını Önleyen Hiyerarşi (Önce Kaleciler, Sonra Defanslar...)
-    const roles = ["GK", "DEF", "MID", "FWD"];
-    let sortedToPlace = [];
-    roles.forEach(r => {
-        teamArr.forEach(p => { if(p.positions.includes(r) && !sortedToPlace.includes(p)) sortedToPlace.push(p); });
-    });
-    teamArr.forEach(p => { if(!sortedToPlace.includes(p)) sortedToPlace.push(p); });
-
-    sortedToPlace.forEach(pObj => {
+    // Oyuncuları mevkilerine göre yerleştirme (Önce net mevkisi olanlar)
+    teamArr.forEach(pObj => {
         let slot = null;
-        for(let r of pObj.positions) { slot = slots.find(s => s.role === r && !s.taken); if(slot) break; }
+        // Oyuncunun seçili mevkilerinden boş olan ilk slotu bul
+        for(let preferredPos of pObj.positions) {
+            slot = slots.find(s => s.role === preferredPos && !s.taken);
+            if(slot) break;
+        }
+        // Eğer hiçbir tercih edilen mevki boş değilse, rastgele ilk boş slotu ver
         if(!slot) slot = slots.find(s => !s.taken);
 
         if(slot) {
             slot.taken = true;
-            const el = document.createElement('div');
-            el.className = `player team-${teamName}`;
-            el.innerHTML = `<div class="w-full truncate px-1 uppercase">${pObj.name || 'OYUNCU'}</div><div class="text-[7px] opacity-60 font-black">${slot.role}</div>`;
-            let fx = teamName === 'a' ? slot.pos[0]/2 : 100 - slot.pos[0]/2;
-            el.style.left = fx + "%"; el.style.top = slot.pos[1] + "%";
-            el.dataset.baseX = fx; el.dataset.role = slot.role; el.dataset.team = teamName;
-            makeDraggable(el, "player");
-            document.getElementById('field').appendChild(el);
+            createPlayerEl(pObj, teamName, slot);
         }
     });
+}
+
+function createPlayerEl(pObj, teamName, slot) {
+    const el = document.createElement('div');
+    el.className = `player team-${teamName}`;
+    el.innerHTML = `<div class="w-full truncate px-1 uppercase">${pObj.name || 'OYUNCU'}</div><div class="text-[7px] opacity-60 font-black">${slot.role}</div>`;
+    
+    let fx = teamName === 'a' ? slot.pos[0]/2 : 100 - slot.pos[0]/2;
+    el.style.left = fx + "%"; el.style.top = slot.pos[1] + "%";
+    el.dataset.baseX = fx; el.dataset.role = slot.role; el.dataset.team = teamName;
+    
+    // Çift Tıklama Özelliği
+    el.ondblclick = () => {
+        const isA = el.dataset.team === 'a';
+        el.classList.remove('team-a', 'team-b');
+        el.dataset.team = isA ? 'b' : 'a';
+        el.classList.add(`team-${el.dataset.team}`);
+        saveAll();
+    };
+
+    makeDraggable(el, "player");
+    document.getElementById('field').appendChild(el);
 }
 
 function makeDraggable(el, type) {
@@ -279,10 +297,16 @@ function clearCache() { if(confirm("Tüm veriler temizlensin mi?")) { localStora
 function resetLayout() { document.querySelectorAll('.ui-panel').forEach(p => p.style = ""); saveAll(); }
 function randomVest() {
     const t = Math.random() > 0.5 ? 'a' : 'b';
-    document.querySelectorAll('.player').forEach(p => { p.classList.remove('vest-on'); if(p.classList.contains(`team-${t}`)) p.classList.add('vest-on'); });
+    document.querySelectorAll('.player').forEach(p => { 
+        if(p.id !== 'ball') {
+            p.classList.remove('vest-on'); 
+            if(p.classList.contains(`team-${t}`)) p.classList.add('vest-on'); 
+        }
+    });
 }
 function exportImage() { html2canvas(document.getElementById('field'), { scale: 3 }).then(canvas => { const link = document.createElement('a'); link.download = 'kent_bt_taktik.png'; link.href = canvas.toDataURL(); link.click(); }); }
 function realignOnly() { distributeAndAlign(); }
+
 function initPanelControls() {
     document.querySelectorAll('.ui-panel').forEach(panel => {
         const header = panel.querySelector('.panel-header');
